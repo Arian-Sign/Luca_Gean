@@ -4152,6 +4152,59 @@ html[data-theme="guardian"] .dana-hpp-box{
 @media (pointer:coarse),(max-width:699px){.acp-rs{width:32px;height:32px;opacity:.7}}
 @media (prefers-reduced-motion:reduce){#aibo-chat-panel{transition:opacity .15s}}
 </style>
+<style id="price-calc-style">
+/* ===== Harga Jual & Target Profit (Data Center) ===== */
+#price-calc-block .pc-card{padding:18px 20px;max-width:860px}
+#price-calc-block .pc-grp{margin:0}
+#price-calc-block .pc-grp + .pc-grp{margin-top:16px}
+#price-calc-block .pc-gh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 9px}
+#price-calc-block .pc-sec{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0}
+#price-calc-block .pc-tag{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-g{display:grid;gap:10px 12px}
+#price-calc-block .pc-g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+#price-calc-block .pc-g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+#price-calc-block .pc-g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+#price-calc-block .pc-fld label{display:block;font-size:10.5px;line-height:1.25;color:var(--muted);margin-bottom:5px;min-height:26px;display:flex;align-items:flex-end}
+#price-calc-block .pc-in{display:flex;align-items:center;box-sizing:border-box;height:36px;padding:0 11px;border-radius:11px;border:2px solid rgba(var(--fg-rgb),.2);background:rgba(var(--fg-rgb),.05);transition:border-color .15s}
+#price-calc-block .pc-in:focus-within{border-color:rgba(var(--acc-rgb),.6)}
+#price-calc-block .pc-in input{all:unset;flex:1;min-width:0;text-align:left;font-size:13px;color:var(--text);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-in span{margin-left:5px;font-size:10.5px;color:var(--muted)}
+#price-calc-block .pc-in.pc-pre span{margin:0 6px 0 0}
+#price-calc-block .pc-hr{border:0;border-top:1px solid var(--card-line);margin:18px 0}
+#price-calc-block .pc-tgt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#price-calc-block .pc-seg{display:inline-flex;padding:2px;border-radius:11px;border:1px solid var(--card-line);background:rgba(var(--fg-rgb),.05)}
+#price-calc-block .pc-seg button{all:unset;cursor:pointer;font-size:10.5px;padding:7px 10px;border-radius:9px;color:var(--muted);white-space:nowrap}
+#price-calc-block .pc-seg button.on{background:rgba(var(--acc-rgb),.18);color:var(--text)}
+#price-calc-block .pc-tgt .pc-in{width:104px;flex:none}
+#price-calc-block .pc-result{padding:14px 16px;border-radius:16px;border:1px solid rgba(var(--acc-rgb),.2);background:rgba(var(--acc-rgb),.07)}
+#price-calc-block .pc-price{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+#price-calc-block .pc-big{font-size:28px;font-weight:650;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+#price-calc-block .pc-mg{font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-dot{color:var(--muted)}
+#price-calc-block .pc-note{font-size:10px;color:var(--muted);margin-top:4px}
+#price-calc-block .pc-err{font-size:11px;color:#ff9a9a;min-height:14px;margin-top:8px}
+#price-calc-block .pc-err:empty{min-height:0;margin:0}
+#price-calc-block .pc-sisa{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--card-line);font-size:11.5px;color:var(--muted)}
+#price-calc-block .pc-sisa b{white-space:nowrap;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-need{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:6px;font-size:10.5px;color:var(--muted)}
+#price-calc-block .pc-need b{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-kv{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:11px}
+#price-calc-block .pc-kv .pc-v{text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+#price-calc-block .pc-kv .pc-sep{grid-column:1/-1;height:1px;background:var(--card-line);margin:3px 0}
+#price-calc-block .pc-ok{color:#8fd9b0 !important}
+#price-calc-block .pc-warn{color:#f0d58a !important}
+#price-calc-block .pc-bad{color:#ff9a9a !important}
+#price-calc-block .analysis-howto{margin-top:16px}
+#price-calc-block .pc-foot{margin-top:10px;font-size:10.5px;line-height:1.5;color:var(--muted)}
+@media(max-width:640px){
+  #price-calc-block .pc-card{padding:15px 14px}
+  #price-calc-block .pc-g3,#price-calc-block .pc-g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #price-calc-block .pc-g3 .pc-fld:last-child:nth-child(odd){grid-column:1/-1}
+  #price-calc-block .pc-seg button{font-size:10px;padding:7px 7px}
+  #price-calc-block .pc-tgt .pc-in{width:88px}
+  #price-calc-block .pc-big{font-size:25px}
+}
+</style>
 </head>
 
 <body>
@@ -10321,6 +10374,76 @@ html[data-theme="guardian"] .dana-hpp-box{
 
         </div>
 
+        <!-- HARGA JUAL & TARGET PROFIT -->
+
+                <div class="scene-block" id="price-calc-block">
+
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Harga Jual &amp; Target Profit</h2>
+                    <div class="section-note">Hitung harga dari target profit, dengan potongan seperti di Rincian Penghasilan Shopee</div>
+                </div>
+            </div>
+
+            <div class="glass pc-card">
+
+                <div id="pc-costs">
+                    <div class="pc-grp">
+                        <div class="pc-gh"><p class="pc-sec">Modal &amp; biaya tetap / pcs</p></div>
+                        <div class="pc-g pc-g3" id="pc-fixed"></div>
+                    </div>
+                    <div class="pc-grp">
+                        <div class="pc-gh"><p class="pc-sec">Biaya Shopee (dari harga setelah voucher)</p><span class="pc-tag" id="pc-tot"></span></div>
+                        <div class="pc-g pc-g4" id="pc-pct"></div>
+                    </div>
+                </div>
+
+                <hr class="pc-hr">
+                <div class="pc-gh"><p class="pc-sec">Target</p></div>
+                <div class="pc-tgt">
+                    <div class="pc-seg" id="pc-mode">
+                        <button type="button" data-m="rp" class="on">Profit / pcs (Rp)</button>
+                        <button type="button" data-m="pct">Margin dari harga (%)</button>
+                    </div>
+                    <div class="pc-in"><input id="pc-tgt" inputmode="decimal" value="4200" aria-label="Target"><span id="pc-tgt-unit">Rp</span></div>
+                </div>
+                <div class="pc-err" id="pc-err"></div>
+
+                <hr class="pc-hr">
+                <div class="pc-result">
+                    <div class="pc-gh"><p class="pc-sec">Harga jual yang dibutuhkan</p></div>
+                    <div class="pc-price"><span class="pc-big" id="pc-price">—</span><span class="pc-dot">•</span><span class="pc-mg" id="pc-mg"></span></div>
+                    <div class="pc-note" id="pc-note"></div>
+                </div>
+
+                <hr class="pc-hr">
+                <div class="pc-gh"><p class="pc-sec">Voucher, AMS &amp; Ads (memotong margin)</p></div>
+                <div class="pc-g pc-g3">
+                    <div class="pc-fld"><label for="pc-voc">Voucher toko (% harga produk)</label><div class="pc-in"><input id="pc-voc" inputmode="decimal" value="5"><span>%</span></div></div>
+                    <div class="pc-fld"><label for="pc-ams">Komisi AMS (rata-rata)</label><div class="pc-in"><input id="pc-ams" inputmode="decimal" value="9,3"><span>%</span></div></div>
+                    <div class="pc-fld"><label for="pc-ads">Isi saldo otomatis (Ads)</label><div class="pc-in"><input id="pc-ads" inputmode="decimal" value="4,44"><span>%</span></div></div>
+                </div>
+                <div class="pc-sisa"><span>Sisa margin setelah Voucher, AMS &amp; Ads</span><b id="pc-sisa">—</b></div>
+                <div class="pc-need"><span>Harga agar target tetap tercapai setelah itu</span><b id="pc-need">—</b></div>
+
+                <details class="glass analysis-howto" id="pc-detail">
+                    <summary>
+                        <span>Rincian</span>
+                        <span class="analysis-howto-arrow" aria-hidden="true"></span>
+                    </summary>
+                    <div class="analysis-howto-body">
+                        <div class="pc-kv" id="pc-kv"></div>
+                        <hr class="pc-hr">
+                        <div class="pc-g pc-g2"><div class="pc-fld"><label for="pc-chk">Cek harga sendiri</label><div class="pc-in pc-pre"><span>Rp</span><input id="pc-chk" inputmode="decimal" placeholder="mis. 85000"></div></div></div>
+                        <div class="pc-kv" id="pc-kv2" style="margin-top:8px"></div>
+                        <div class="pc-foot">Urutan rincian sama dengan Rincian Penghasilan Shopee: biaya % dihitung dari <b>harga produk − voucher toko</b>; Komisi AMS dan Isi saldo otomatis juga % dari harga setelah voucher. Dana dilepas = dasar − semua biaya − Biaya Layanan proses pesanan (tetap per pesanan). Tarif Gratis Ongkir XTRA berbeda per kategori produk; Rp1.250 proses dianggap per pcs (1 pesanan = 1 pcs). Harga di atas dihitung tanpa Voucher, AMS &amp; Ads; ketiganya memotong margin.</div>
+                    </div>
+                </details>
+
+            </div>
+
+        </div>
+
 </section>
 </section>
 
@@ -11500,12 +11623,9 @@ const dashboardData = {
             if (!databaseProduct) {
 
                 const matchingKey =
-                    Object.keys(database).find(
-                        key =>
-                            analysisProductNamesMatch(
-                                product.name,
-                                key
-                            )
+                    findBestAnalysisDatabaseKey(
+                        product.name,
+                        database
                     );
 
                 if (matchingKey) {
@@ -16399,6 +16519,57 @@ window.normalizeAnalysisProductName = normalizeAnalysisProductName;
 window.analysisProductNamesMatch = analysisProductNamesMatch;
 
 /*
+ * Cari produk Database yang PALING cocok untuk satu nama penjualan.
+ * Prioritas: nama sama persis (setelah normalisasi) → versi lebih
+ * panjang/pendek dengan selisih panjang terkecil. Seri → urutan database.
+ * Mengembalikan key database atau null.
+ */
+function findBestAnalysisDatabaseKey(name, database) {
+
+    const target =
+        normalizeAnalysisProductName(name);
+
+    if (!target || !database) {
+        return null;
+    }
+
+    let bestKey = null;
+    let bestDiff = Infinity;
+
+    for (const key of Object.keys(database)) {
+
+        const entry = database[key];
+
+        const dbName =
+            String(
+                (entry && entry.name) || key
+            );
+
+        if (!analysisProductNamesMatch(name, dbName)) {
+            continue;
+        }
+
+        const diff = Math.abs(
+            normalizeAnalysisProductName(dbName).length -
+            target.length
+        );
+
+        if (diff < bestDiff) {
+            bestKey = key;
+            bestDiff = diff;
+            if (diff === 0) {
+                break;
+            }
+        }
+
+    }
+
+    return bestKey;
+
+}
+window.findBestAnalysisDatabaseKey = findBestAnalysisDatabaseKey;
+
+/*
  * =========================================================
  * ANALISIS MARGIN TIPIS — PARAMETER & KLASIFIKASI
  *
@@ -16676,14 +16847,129 @@ function calculateAnalysisMargin() {
      * ========================================================
      */
 
+    /*
+     * Satu baris penjualan hanya boleh dinilai oleh SATU produk
+     * database (yang paling cocok). Tanpa ini, nama yang sama di dua
+     * toko (mis. "Floraine ... Import" dan "Floraine ... | Cardigan
+     * Kancing Bunga Mawar") membuat satu penjualan terhitung dua kali.
+     */
+    const salesByDatabaseKey =
+        new Map();
+
+    /*
+     * Produk yang sama bisa punya NAMA berbeda antar upload / periode
+     * (judul diedit), tetapi kode produk (productId) tetap. Kelompokkan
+     * dulu per productId (tanpa id → per nama ternormalisasi), pakai
+     * periode terbaru kelompok itu saja, lalu cocokkan ke SATU produk
+     * database memakai nama dengan PCS terbanyak.
+     */
+    const clusters =
+        new Map();
+
+    [...productMap.values()].forEach(
+        function (item) {
+
+            const clusterKey =
+                item.productId
+                    ? "id:" + item.productId
+                    : "name:" +
+                      normalizeAnalysisProductName(
+                          item.name
+                      );
+
+            if (!clusters.has(clusterKey)) {
+                clusters.set(clusterKey, []);
+            }
+
+            clusters
+                .get(clusterKey)
+                .push(item);
+
+        }
+    );
+
+    clusters.forEach(
+        function (items) {
+
+            const newest =
+                items.reduce(
+                    (latest, item) =>
+                        String(item.periodKey || "") > latest
+                            ? String(item.periodKey || "")
+                            : latest,
+                    ""
+                );
+
+            const current =
+                items
+                    .filter(
+                        item =>
+                            String(item.periodKey || "") ===
+                            newest
+                    )
+                    .sort(
+                        (a, b) =>
+                            b.pcs - a.pcs
+                    );
+
+            let databaseKey = null;
+
+            for (const item of current) {
+
+                databaseKey =
+                    findBestAnalysisDatabaseKey(
+                        item.name,
+                        database
+                    );
+
+                if (databaseKey !== null) {
+                    break;
+                }
+
+            }
+
+            if (databaseKey === null) {
+                return;
+            }
+
+            if (
+                !salesByDatabaseKey.has(
+                    databaseKey
+                )
+            ) {
+                salesByDatabaseKey.set(
+                    databaseKey,
+                    []
+                );
+            }
+
+            current.forEach(
+                item =>
+                    salesByDatabaseKey
+                        .get(databaseKey)
+                        .push(item)
+            );
+
+        }
+    );
+
     for (
-        const product of
-        Object.values(database)
+        const [databaseKey, product] of
+        Object.entries(database)
     ) {
+
+        const matchedRows =
+            salesByDatabaseKey.get(
+                databaseKey
+            );
+
+        if (!matchedRows) {
+            continue;
+        }
 
         const fullName =
             String(
-                product?.name ?? ""
+                product?.name ?? databaseKey
             ).trim();
 
         const hpp =
@@ -16698,25 +16984,26 @@ function calculateAnalysisMargin() {
             continue;
         }
 
-
         /*
-         * Database Produk menggunakan nama produk
-         * sebagai referensi.
-         *
-         * Gabungkan semua hasil Excel yang memiliki
-         * nama produk yang sama.
+         * Satu produk = SATU periode: periode terbaru tempat salah
+         * satu variasi namanya terjual. Variasi nama dari periode
+         * lama (fallback) tidak digabung dengan periode yang lebih baru.
          */
+        const newestPeriod =
+            matchedRows.reduce(
+                (latest, item) =>
+                    String(item.periodKey || "") > latest
+                        ? String(item.periodKey || "")
+                        : latest,
+                ""
+            );
 
         const salesMatches =
-            [...productMap.values()]
-                .filter(
-                    item =>
-                        analysisProductNamesMatch(
-                            item.name,
-                            fullName
-                        )
-                );
-
+            matchedRows.filter(
+                item =>
+                    String(item.periodKey || "") ===
+                    newestPeriod
+            );
 
         if (!salesMatches.length) {
             continue;
@@ -19521,12 +19808,9 @@ function saveUpload(
             if (!databaseProduct) {
 
                 const matchingKey =
-                    Object.keys(database).find(
-                        key =>
-                            analysisProductNamesMatch(
-                                productName,
-                                key
-                            )
+                    findBestAnalysisDatabaseKey(
+                        productName,
+                        database
                     );
 
                 if (matchingKey) {
@@ -20444,6 +20728,8 @@ function saveUpload(
         loadProductDatabase: loadProductDatabase,
         saveProductHpp: saveProductHpp,
         analysisProductNamesMatch: analysisProductNamesMatch,
+        findBestAnalysisDatabaseKey: findBestAnalysisDatabaseKey,
+        normalizeAnalysisProductName: normalizeAnalysisProductName,
         /* dipakai ringkasan AI (LucaSummary): satu sumber ambang & hitungan */
         getAnalysisMarginConfig: getAnalysisMarginConfig,
         classifyAnalysisMargin: classifyAnalysisMargin,
@@ -31358,6 +31644,146 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
 })();
 </script>
 
+<script id="price-calc-script">
+(function(){
+"use strict";
+/* ---------- LOGIC (tanpa DOM) ----------
+   Model (dicek terhadap 4 Rincian Penghasilan Shopee, selisih <= Rp1):
+   dasar  = harga * (1 - voucher%)
+   dana   = dasar * (1 - plat - ongkir - promo - pph - ams - ads) - proses
+   profit = dana - HPP - off-system                                      */
+var FIELDS = [
+  { id:"hpp",   grp:"fixed", label:"Harga HPP",                         unit:"Rp", def:"" },
+  { id:"proses",grp:"fixed", label:"Biaya Layanan proses pesanan",      unit:"Rp", def:1250 },
+  { id:"off",   grp:"fixed", label:"Biaya off-system",                  unit:"Rp", def:6000 },
+  { id:"plat",  grp:"pct",   label:"Biaya platform (administrasi)",     unit:"%",  def:8.25 },
+  { id:"ongkir",grp:"pct",   label:"Biaya Layanan gratis ongkir extra", unit:"%",  def:5.5 },
+  { id:"promo", grp:"pct",   label:"Biaya Layanan promo extra",         unit:"%",  def:4.5 },
+  { id:"pph",   grp:"pct",   label:"PPh 22",                            unit:"%",  def:0.5 }
+];
+var EXTRA = ["voc", "ams", "ads"];
+function cfg(){   /* ambang & off-system: sumber tunggal = Analysis */
+  try{ if(window.LucaGean && typeof window.LucaGean.getAnalysisMarginConfig === "function"){ return window.LucaGean.getAnalysisMarginConfig(); } }catch(e){}
+  return { offSystemCostPerPcs:6000, bufferPerPcs:2100, normalFromPerPcs:4200 };
+}
+function classify(p){
+  try{ if(window.LucaGean && typeof window.LucaGean.classifyAnalysisMargin === "function"){ var r = window.LucaGean.classifyAnalysisMargin(p); return { s:r.status, c: r.status === "NORMAL" ? "pc-ok" : r.status === "PERHATIAN" ? "pc-warn" : "pc-bad" }; } }catch(e){}
+  var c = cfg(); p = Math.round(p * 100) / 100;
+  if(p < 0){ return { s:"TINDAKAN", c:"pc-bad" }; }
+  if(p < c.bufferPerPcs){ return { s:"EVALUASI", c:"pc-bad" }; }
+  if(p < c.normalFromPerPcs){ return { s:"PERHATIAN", c:"pc-warn" }; }
+  return { s:"NORMAL", c:"pc-ok" };
+}
+function feeSum(v){ return (v.plat + v.ongkir + v.promo + v.pph + v.ams + v.ads) / 100; }
+function keep(v){ return (1 - v.voc / 100) * (1 - feeSum(v)); }               /* bagian harga yang tersisa sebelum biaya tetap */
+function priceForProfit(v, profit){ var k = keep(v); return k <= 0 ? null : (v.proses + v.off + v.hpp + profit) / k; }
+function priceForMargin(v, m){ var k = keep(v) - m / 100; return k <= 0 ? null : (v.proses + v.off + v.hpp) / k; }
+function released(v, price){ return price * keep(v) - v.proses; }
+function profitAt(v, price){ return released(v, price) - v.hpp - v.off; }
+function withoutVA(v){ var o = {}; Object.keys(v).forEach(function(k){ o[k] = v[k]; }); o.voc = 0; o.ams = 0; o.ads = 0; return o; }
+function ceilTo(x, step){ return Math.ceil(x / step - 1e-9) * step; }
+
+/* ---------- RENDERER ---------- */
+var mode = "rp", built = false;
+function $(id){ return document.getElementById(id); }
+function rp(n){ return (n < 0 ? "−" : "") + "Rp" + Math.abs(Math.round(n)).toLocaleString("id-ID"); }
+function pc(n){ return n.toFixed(2).replace(".", ",") + "%"; }
+function num(el){ var n = parseFloat(String(el.value).replace(/\./g, "").replace(",", ".")); return isNaN(n) ? null : n; }
+function kv(host, pairs){
+  host.textContent = "";
+  pairs.forEach(function(p){
+    if(p === "-"){ var s = document.createElement("div"); s.className = "pc-sep"; host.appendChild(s); return; }
+    var a = document.createElement("div"), b = document.createElement("div");
+    a.textContent = p[0]; b.textContent = p[1]; b.className = "pc-v" + (p[2] ? " " + p[2] : "");
+    host.appendChild(a); host.appendChild(b);
+  });
+}
+function readVals(){
+  var v = {};
+  FIELDS.map(function(d){ return d.id; }).concat(EXTRA).forEach(function(id){ var n = num($("pc-" + id)); v[id] = (n === null || n < 0) ? 0 : n; });
+  return v;
+}
+function render(){
+  if(!built){ return; }
+  var v = readVals(), base = withoutVA(v), err = "", t = num($("pc-tgt")), p = null, pAll = null;
+  if(t === null){ t = 0; }
+  $("pc-tot").textContent = "Total " + pc(v.plat + v.ongkir + v.promo + v.pph) + " + Rp" + Math.round(v.proses).toLocaleString("id-ID") + " / pesanan";
+  if(!(v.hpp > 0)){ err = "Isi Harga HPP dulu."; }
+  else if(keep(base) <= 0){ err = "Total persen biaya ≥ 100%."; }
+  if(!err){ p = mode === "rp" ? priceForProfit(base, t) : priceForMargin(base, t); if(p === null){ err = "Target margin terlalu besar untuk struktur biaya ini."; } }
+  $("pc-err").textContent = err;
+  if(p === null){
+    $("pc-price").textContent = "—"; $("pc-mg").textContent = ""; $("pc-note").textContent = "";
+    $("pc-sisa").textContent = "—"; $("pc-sisa").className = ""; $("pc-need").textContent = "—"; kv($("pc-kv"), []); kv($("pc-kv2"), []); return;
+  }
+  var C = cfg(), pr = ceilTo(p, 100), pb = profitAt(base, pr), pf = profitAt(v, pr), c1 = classify(pf);
+  $("pc-price").textContent = rp(pr);
+  $("pc-mg").textContent = "Margin " + rp(pb);
+  $("pc-note").textContent = "dibulatkan ke atas Rp100 (murni " + rp(p) + ")";
+  $("pc-sisa").textContent = rp(pf) + "  " + c1.s; $("pc-sisa").className = c1.c;
+  pAll = mode === "rp" ? priceForProfit(v, t) : priceForMargin(v, t);
+  $("pc-need").textContent = pAll === null ? "tidak tercapai" : rp(ceilTo(pAll, 100));
+  var net = pr * (1 - v.voc / 100);
+  var be = priceForProfit(base, 0), nm = priceForProfit(base, C.normalFromPerPcs);
+  kv($("pc-kv"), [
+    ["Harga produk", rp(pr)],
+    ["− Voucher toko " + pc(v.voc), rp(pr - net)],
+    ["= Dasar biaya", rp(net)],
+    "-",
+    ["− Biaya administrasi " + pc(v.plat), rp(net * v.plat / 100)],
+    ["− Biaya Layanan proses pesanan", rp(v.proses)],
+    ["− Biaya Layanan gratis ongkir extra " + pc(v.ongkir), rp(net * v.ongkir / 100)],
+    ["− Biaya Layanan promo extra " + pc(v.promo), rp(net * v.promo / 100)],
+    ["− Komisi AMS " + pc(v.ams), rp(net * v.ams / 100)],
+    ["− Isi saldo otomatis (Ads) " + pc(v.ads), rp(net * v.ads / 100)],
+    ["− PPh 22 " + pc(v.pph), rp(net * v.pph / 100)],
+    ["= Dana dilepas (Penghasilan Akhir)", rp(released(v, pr))],
+    "-",
+    ["− HPP", rp(v.hpp)],
+    ["− Biaya off-system", rp(v.off)],
+    ["= Sisa margin / pcs", rp(pf) + "  " + c1.s, c1.c],
+    ["Margin dari harga", (pf / pr * 100).toFixed(1).replace(".", ",") + "%"],
+    "-",
+    ["Titik impas (tanpa Voucher/AMS/Ads)", rp(ceilTo(be, 100))],
+    ["Harga mulai NORMAL (≥ " + rp(C.normalFromPerPcs) + ", tanpa Voucher/AMS/Ads)", rp(ceilTo(nm, 100))]
+  ]);
+  var cv = num($("pc-chk"));
+  if(cv === null){ kv($("pc-kv2"), []); }
+  else{ var q = profitAt(v, cv), cc = classify(q); kv($("pc-kv2"), [["Dana dilepas / pcs", rp(released(v, cv))], ["Sisa margin / pcs", rp(q) + "  " + cc.s, cc.c], ["Margin dari harga", (q / cv * 100).toFixed(1).replace(".", ",") + "%"]]); }
+}
+function build(){
+  if(!$("pc-fixed") || built){ return; }
+  var off = cfg().offSystemCostPerPcs;
+  FIELDS.forEach(function(d){
+    var box = $(d.grp === "fixed" ? "pc-fixed" : "pc-pct");
+    var f = document.createElement("div"); f.className = "pc-fld";
+    var lab = document.createElement("label"); lab.textContent = d.label; lab.setAttribute("for", "pc-" + d.id);
+    var w = document.createElement("div"); w.className = "pc-in";
+    var inp = document.createElement("input"); inp.id = "pc-" + d.id; inp.inputMode = "decimal";
+    var def = d.id === "off" ? off : d.def;
+    inp.value = def === "" ? "" : String(def).replace(".", ",");
+    if(d.id === "hpp"){ inp.placeholder = "mis. 54000"; }
+    var u = document.createElement("span"); u.textContent = d.unit;
+    w.appendChild(inp); w.appendChild(u); f.appendChild(lab); f.appendChild(w); box.appendChild(f);
+    inp.addEventListener("input", render);
+  });
+  built = true;
+  ["pc-tgt", "pc-chk", "pc-voc", "pc-ams", "pc-ads"].forEach(function(id){ $(id).addEventListener("input", render); });
+  $("pc-mode").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b){ return; }
+    mode = b.getAttribute("data-m");
+    Array.prototype.forEach.call($("pc-mode").children, function(x){ x.classList.toggle("on", x === b); });
+    $("pc-tgt-unit").textContent = mode === "rp" ? "Rp" : "%";
+    $("pc-tgt").value = mode === "rp" ? "4200" : "8";
+    render();
+  });
+  render();
+}
+if(document.readyState === "loading"){ document.addEventListener("DOMContentLoaded", build); } else{ build(); }
+/* hanya untuk uji: model murni */
+window.__pcModel = { keep: keep, released: released, profitAt: profitAt, priceForProfit: priceForProfit };
+})();
+</script>
 <script id="ai-summary-script">
 /* ============================================================
    RINGKASAN UNTUK AI  (window.LucaSummary)
@@ -31497,9 +31923,11 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
         return Object.keys(db || {}).map(function(k){ var e = db[k] || {}; return { name: String(e.name || k).trim(), hpp: num(e.hpp) }; });
     }
     function matchHpp(name, entries){
-        var i, m = typeof G().analysisProductNamesMatch === "function" ? G().analysisProductNamesMatch : null;
-        for(i = 0; i < entries.length; i++){
-            if(entries[i].hpp > 0 && m && m(name, entries[i].name)){ return entries[i].hpp; }
+        var i, f = G().findBestAnalysisDatabaseKey, db = {};
+        entries.forEach(function(e){ db[e.name] = { name: e.name, hpp: e.hpp }; });
+        if(typeof f === "function"){
+            i = f(name, db);
+            return i !== null && i !== undefined && db[i] && db[i].hpp > 0 ? db[i].hpp : 0;
         }
         return 0;
     }
@@ -31568,7 +31996,7 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
                 var n = String(it.productName || "").trim(); if(!n || n === "-"){ return; }
                 var id = it.productId && it.productId !== "-" ? String(it.productId).trim() : "", k = id ? id + "||" + n : n;
                 if(chosen[k] || num(it.quantity) <= 0){ return; }
-                chosen[k] = { nama: n, pcs: 0, income: 0, periode: pk };
+                chosen[k] = { nama: n, id: id, pcs: 0, income: 0, periode: pk };
                 chosenOrder.push(k);
             });
             sum.forEach(function(it){
@@ -31578,14 +32006,28 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
         });
         if(!chosenOrder.length){ return null; }
         var entries = dbEntries(), out = [];
-        var cfgDb = readJson(DB_KEY, {});
+        var cfgDb = readJson(DB_KEY, {}), byDb = {};
+        /* aturan = calculateAnalysisMargin: tiap baris penjualan -> SATU produk database terbaik; tiap produk -> SATU periode (terbaru) */
+        var clusters = {}, f = G().findBestAnalysisDatabaseKey, normF = G().normalizeAnalysisProductName;
+        chosenOrder.forEach(function(ck){
+            var c = chosen[ck], ckey = c.id ? "id:" + c.id : "name:" + (typeof normF === "function" ? normF(c.nama) : c.nama);
+            (clusters[ckey] = clusters[ckey] || []).push(c);
+        });
+        Object.keys(clusters).forEach(function(ckey){
+            var items = clusters[ckey], newest = "", cur, dk = null, j;
+            items.forEach(function(c){ if(c.periode > newest){ newest = c.periode; } });
+            cur = items.filter(function(c){ return c.periode === newest; }).sort(function(a, b){ return b.pcs - a.pcs; });
+            for(j = 0; j < cur.length && (dk === null || dk === undefined); j++){ dk = typeof f === "function" ? f(cur[j].nama, cfgDb) : null; }
+            if(dk === null || dk === undefined){ return; }
+            cur.forEach(function(c){ (byDb[dk] = byDb[dk] || []).push(c); });
+        });
         Object.keys(cfgDb).forEach(function(k){
             var e = cfgDb[k] || {}, name = String(e.name || k).trim(), hpp = num(e.hpp);
-            if(!name || hpp <= 0){ return; }
-            var pcs = 0, income = 0, per = {};
-            chosenOrder.forEach(function(ck){
-                var c = chosen[ck];
-                if(typeof G().analysisProductNamesMatch === "function" && G().analysisProductNamesMatch(c.nama, name)){ pcs += c.pcs; income += c.income; per[c.periode] = 1; }
+            if(!name || hpp <= 0 || !byDb[k]){ return; }
+            var pcs = 0, income = 0, per = {}, newest = "";
+            byDb[k].forEach(function(c){ if(c.periode > newest){ newest = c.periode; } });
+            byDb[k].forEach(function(c){
+                if(c.periode === newest){ pcs += c.pcs; income += c.income; per[c.periode] = 1; }
             });
             if(pcs <= 0){ return; }
             var rel = income / pcs, mi = marginInfo(rel, hpp);
