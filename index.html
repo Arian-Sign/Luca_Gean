@@ -3194,6 +3194,38 @@ tr:last-child td {
     stroke-width: 2;
 }
 
+/* Overview produk: baris fallback (tidak terjual di periode aktif) */
+#overview-product-table-body tr.overview-product-fallback td {
+    color: rgba(var(--fg-rgb), .5);
+}
+
+#overview-product-table-body tr.overview-product-fallback td.status-cell {
+    color: inherit;
+}
+
+#overview-product-table-body .overview-product-period {
+    display: block;
+    margin-top: 2px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .02em;
+    opacity: .8;
+}
+
+/* persentase perubahan: kecil, redup, tidak mengubah ukuran card */
+.overview-trend-pct {
+    position: absolute;
+    right: 13px;
+    bottom: 9px;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: rgba(var(--fg-rgb), .42);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
 
 /* OVERVIEW TREND CARD POSITION */
 
@@ -11156,31 +11188,55 @@ const dashboardData = {
         const dana =
             store["dana-dilepas"] || {};
 
-        const productMap =
+        const allProductsMap =
             new Map();
 
         /*
          * ========================================================
-         * OVERVIEW — GABUNG SEMUA SESI DANA DILEPAS
+         * OVERVIEW — PERIODE AKTIF + FALLBACK
          *
-         * Mengikuti pola calculateAnalysisMargin():
-         * semua periode + semua upload dibaca.
+         * Angka produk TIDAK lagi digabung antar periode.
+         * Tiap produk memakai SATU periode:
+         *   - periode aktif (terbaru) bila produk terjual di sana;
+         *   - bila tidak, periode TERAKHIR produk itu terjual
+         *     (periodKey/isActive menandai asalnya).
+         * Per periode hanya upload terakhir yang dibaca
+         * (sama dengan getLatestDanaDilepasPeriodData), jadi
+         * upload ganda pada periode yang sama tidak dobel.
          *
          * productSummary -> omzet
          * parsed.products -> order / return / PCS
          * ========================================================
          */
 
+        const periodKeys =
+            Object.keys(dana).sort().reverse();
+
+        const activeKey =
+            periodKeys.find(function (k) {
+                return Array.isArray(dana[k]) &&
+                    dana[k].length > 0;
+            });
+
         for (
-            const period of Object.values(dana)
+            const periodKey of periodKeys
         ) {
 
-            if (!Array.isArray(period)) {
+            const period =
+                dana[periodKey];
+
+            if (
+                !Array.isArray(period) ||
+                !period.length
+            ) {
                 continue;
             }
 
+            const productMap =
+                new Map();
+
             for (
-                const upload of period
+                const upload of [period[period.length - 1]]
             ) {
 
                 const parsed =
@@ -11381,6 +11437,31 @@ const dashboardData = {
 
             }
 
+            /*
+             * Periode lebih baru diproses lebih dulu, jadi
+             * produk yang sudah terisi tidak ditimpa periode lama.
+             */
+            productMap.forEach(function (item, mapKey) {
+
+                const sold =
+                    item.pcs > 0 ||
+                    item.orders.size > 0 ||
+                    item.income !== 0;
+
+                if (
+                    !sold ||
+                    allProductsMap.has(mapKey)
+                ) {
+                    return;
+                }
+
+                item.periodKey = periodKey;
+                item.isActive = periodKey === activeKey;
+
+                allProductsMap.set(mapKey, item);
+
+            });
+
         }
 
 
@@ -11401,7 +11482,7 @@ const dashboardData = {
          */
 
         return [
-            ...productMap.values()
+            ...allProductsMap.values()
         ].map(function(product) {
 
             const pcs =
@@ -11478,7 +11559,13 @@ const dashboardData = {
                     profit,
 
                 returns:
-                    product.returns
+                    product.returns,
+
+                periodKey:
+                    product.periodKey,
+
+                isActive:
+                    product.isActive === true
 
             };
 
@@ -11693,6 +11780,67 @@ const dashboardData = {
         });
 
 
+        /*
+         * Urutan: produk terjual di periode aktif dulu (Order terbesar),
+         * lalu produk fallback (periode terbaru dulu, lalu Order terbesar).
+         * Sort stabil: sisanya tetap urutan Analysis.
+         */
+        productsWithFindings.sort(function(a, b) {
+
+            const pa = a.product || {};
+            const pb = b.product || {};
+
+            const ra = pa.isActive ? 0 : (pa.periodKey ? 1 : 2);
+            const rb = pb.isActive ? 0 : (pb.periodKey ? 1 : 2);
+
+            if (ra !== rb) {
+                return ra - rb;
+            }
+
+            if (ra === 1 && pa.periodKey !== pb.periodKey) {
+                return pa.periodKey < pb.periodKey ? 1 : -1;
+            }
+
+            return (Number(pb.orders) || 0) - (Number(pa.orders) || 0);
+
+        });
+
+        const MONTHS_ID = [
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+        ];
+
+        /* periodKey = tanggal awal minggu (YYYY-MM-DD); laporan mingguan = +6 hari */
+        function periodRangeLabel(periodKey) {
+
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+                String(periodKey || "")
+            );
+
+            if (!m) {
+                return String(periodKey || "");
+            }
+
+            const start = new Date(
+                Date.UTC(+m[1], +m[2] - 1, +m[3])
+            );
+
+            const end = new Date(
+                start.getTime() + 6 * 86400000
+            );
+
+            const sd = start.getUTCDate();
+            const ed = end.getUTCDate();
+            const sm = MONTHS_ID[start.getUTCMonth()];
+            const em = MONTHS_ID[end.getUTCMonth()];
+
+            return sm === em
+                ? sd + "–" + ed + " " + em
+                : sd + " " + sm + " – " + ed + " " + em;
+
+        }
+
+
         const analysisCountBadge =
             document.getElementById(
                 "overview-product-analysis-count"
@@ -11779,11 +11927,21 @@ const dashboardData = {
                     );
 
 
+                const isFallback =
+                    !!product.periodKey &&
+                    product.isActive !== true;
+
                 return `
-                    <tr>
+                    <tr${isFallback ? ' class="overview-product-fallback"' : ""}>
 
                         <td class="product-cell">
-                            ${escape(name)}
+                            ${escape(name)}${
+                                isFallback
+                                    ? '<span class="overview-product-period">data ' +
+                                      escape(periodRangeLabel(product.periodKey)) +
+                                      "</span>"
+                                    : ""
+                            }
                         </td>
 
                         <td class="number-cell">
@@ -12362,7 +12520,11 @@ tableEl.innerHTML =
         document.getElementById(
             "overview-card-total-orders"
         ),
-        ordersTrend
+        ordersTrend,
+        calculateTrendPct(
+            current?.totalOrders ?? null,
+            previous?.totalOrders ?? null
+        )
     );
 
 
@@ -12370,7 +12532,11 @@ tableEl.innerHTML =
         document.getElementById(
             "overview-card-total-sales"
         ),
-        salesTrend
+        salesTrend,
+        calculateTrendPct(
+            current?.totalSales ?? null,
+            previous?.totalSales ?? null
+        )
     );
 
 }
@@ -12672,6 +12838,8 @@ function syncOverviewProductMetrics() {
                     old.remove();
                 }
 
+                setTrendPct(card, null);
+
                 if (!previousProduct) {
                     return;
                 }
@@ -12724,6 +12892,14 @@ function syncOverviewProductMetrics() {
                 icon.style.pointerEvents = "none";
 
                 valueEl.appendChild(icon);
+
+                setTrendPct(
+                    card,
+                    calculateTrendPct(
+                        currentValue,
+                        previousValue
+                    )
+                );
             }
         );
     }
@@ -16330,15 +16506,21 @@ function calculateAnalysisMargin() {
 
     /*
      * ========================================================
-     * AMBIL SEMUA UPLOAD DANA DILEPAS
+     * AMBIL DATA DANA DILEPAS — PERIODE AKTIF + FALLBACK
+     *
+     * Aturan SAMA dengan Overview (getOverviewDanaProducts):
+     * tiap produk memakai SATU periode, yaitu periode terbaru
+     * tempat produk itu terjual (periode aktif bila terjual di
+     * sana, selain itu periode terakhir terjualnya = fallback).
+     * Bila produk terjual lagi di periode yang lebih baru, data
+     * fallback otomatis digantikan. Per periode hanya upload
+     * terakhir yang dibaca (upload ganda tidak dobel).
      *
      * Gunakan productSummary karena parser sudah melakukan
      * agregasi PCS + income per produk.
      *
      * Identitas produk mengikuti parser:
      * productId || productName
-     *
-     * Semua periode dan semua sesi upload digabung.
      * ========================================================
      */
 
@@ -16347,16 +16529,31 @@ function calculateAnalysisMargin() {
         typeof dana === "object"
     ) {
 
+        const periodKeys =
+            Object.keys(dana).sort().reverse();
+
         for (
-            const period of Object.values(dana)
+            const periodKey of periodKeys
         ) {
 
-            if (!Array.isArray(period)) {
+            const period =
+                dana[periodKey];
+
+            if (
+                !Array.isArray(period) ||
+                !period.length
+            ) {
                 continue;
             }
 
+            const selectedMap =
+                productMap;
+
+            const periodMap =
+                new Map();
+
             for (
-                const upload of period
+                const upload of [period[period.length - 1]]
             ) {
 
                 const parsed =
@@ -16404,10 +16601,10 @@ function calculateAnalysisMargin() {
 
 
                     if (
-                        !productMap.has(key)
+                        !periodMap.has(key)
                     ) {
 
-                        productMap.set(
+                        periodMap.set(
                             key,
                             {
                                 productId:
@@ -16428,7 +16625,7 @@ function calculateAnalysisMargin() {
 
 
                     const row =
-                        productMap.get(key);
+                        periodMap.get(key);
 
 
                     row.pcs +=
@@ -16445,6 +16642,25 @@ function calculateAnalysisMargin() {
                 }
 
             }
+
+            /*
+             * Periode lebih baru diproses lebih dulu: produk yang
+             * sudah terisi tidak ditimpa data periode lama.
+             */
+            periodMap.forEach(function (row, mapKey) {
+
+                if (
+                    row.pcs <= 0 ||
+                    selectedMap.has(mapKey)
+                ) {
+                    return;
+                }
+
+                row.periodKey = periodKey;
+
+                selectedMap.set(mapKey, row);
+
+            });
 
         }
 
@@ -17674,6 +17890,8 @@ function renderAdsSummaryTrends() {
             const item =
                 data[metric.key];
 
+            setTrendPct(card, null);
+
             if (!item) {
                 return;
             }
@@ -17757,6 +17975,14 @@ function renderAdsSummaryTrends() {
                 "none";
 
             card.appendChild(icon);
+
+            setTrendPct(
+                card,
+                calculateTrendPct(
+                    item.current,
+                    item.previous
+                )
+            );
         }
     );
 }
@@ -18963,6 +19189,14 @@ function saveUpload(
                 overviewTrendIcon(trend);
 
             card.appendChild(icon);
+
+            setTrendPct(
+                card,
+                calculateTrendPct(
+                    item.current,
+                    item.previous
+                )
+            );
         }
     }
 
@@ -19726,22 +19960,32 @@ function saveUpload(
          * Profit hanya comparable kalau kedua
          * periode memiliki HPP lengkap.
          */
+        const profitComparable =
+            current.missingProducts === 0 &&
+            previous.missingProducts === 0;
+
         const profitTrend =
-            (
-                current.missingProducts === 0 &&
-                previous.missingProducts === 0
-            )
+            profitComparable
                 ? calculateTrend(
                     current.afterHpp,
                     previous.afterHpp
                 )
                 : "flat";
 
+        const profitPct =
+            profitComparable
+                ? calculateTrendPct(
+                    current.afterHpp,
+                    previous.afterHpp
+                )
+                : null;
+
         /*
          * Profit / PCS harus menggunakan
          * PCS masing-masing periode.
          */
         let profitPerPcsTrend = "flat";
+        let profitPerPcsPct = null;
 
         if (
             current.missingProducts === 0 &&
@@ -19760,6 +20004,12 @@ function saveUpload(
 
             profitPerPcsTrend =
                 calculateTrend(
+                    currentProfitPerPcs,
+                    previousProfitPerPcs
+                );
+
+            profitPerPcsPct =
+                calculateTrendPct(
                     currentProfitPerPcs,
                     previousProfitPerPcs
                 );
@@ -19801,6 +20051,9 @@ function saveUpload(
                 profitPerPcsTrend
             )
         );
+
+        setTrendPct(profitCard, profitPct);
+        setTrendPct(profitPerPcsCard, profitPerPcsPct);
     }
 
 
@@ -20190,7 +20443,11 @@ function saveUpload(
         parseDanaDilepas: parseDanaDilepas,
         loadProductDatabase: loadProductDatabase,
         saveProductHpp: saveProductHpp,
-        analysisProductNamesMatch: analysisProductNamesMatch
+        analysisProductNamesMatch: analysisProductNamesMatch,
+        /* dipakai ringkasan AI (LucaSummary): satu sumber ambang & hitungan */
+        getAnalysisMarginConfig: getAnalysisMarginConfig,
+        classifyAnalysisMargin: classifyAnalysisMargin,
+        calculateDanaDilepasHpp: calculateDanaDilepasHpp
     });
 
 
@@ -21635,7 +21892,55 @@ function overviewTrendIcon(type) {
     return icon;
 }
 
-function setOverviewTrend(card, type) {
+/*
+ * Persentase perubahan relatif: (sekarang - sebelum) / |sebelum| * 100.
+ * null bila salah satu nilai tidak ada / bukan angka, atau pembanding 0
+ * (tidak bisa dihitung, jadi tidak ditampilkan).
+ */
+function calculateTrendPct(current, previous) {
+    if (
+        current === null || current === undefined ||
+        previous === null || previous === undefined
+    ) {
+        return null;
+    }
+
+    const c = Number(current);
+    const p = Number(previous);
+
+    if (!Number.isFinite(c) || !Number.isFinite(p) || p === 0) {
+        return null;
+    }
+
+    return ((c - p) / Math.abs(p)) * 100;
+}
+
+/* Teks kecil redup di pojok kanan bawah card, di samping ikon trend. */
+function setTrendPct(card, pct) {
+    if (!card) return;
+
+    Array.from(card.children).forEach(function (child) {
+        if (child.classList && child.classList.contains("overview-trend-pct")) {
+            child.remove();
+        }
+    });
+
+    if (pct === null || pct === undefined || !Number.isFinite(pct)) {
+        return;
+    }
+
+    const abs = Math.abs(pct);
+    const rounded = abs >= 100 ? Math.round(abs) : Math.round(abs * 10) / 10;
+    const sign = rounded === 0 ? "" : (pct > 0 ? "+" : "-");
+
+    const el = document.createElement("span");
+    el.className = "overview-trend-pct";
+    el.textContent =
+        sign + rounded.toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "%";
+    card.appendChild(el);
+}
+
+function setOverviewTrend(card, type, pct) {
     if (!card) return;
 
     card.style.position = "relative";
@@ -21651,6 +21956,8 @@ function setOverviewTrend(card, type) {
     card.appendChild(
         overviewTrendIcon(type)
     );
+
+    setTrendPct(card, pct);
 }
 
 </script>
@@ -22149,7 +22456,11 @@ function renderProductPerformanceTrends() {
         document.getElementById(
             "product-total-products"
         )?.closest(".glass"),
-        productsTrend
+        productsTrend,
+        calculateTrendPct(
+            current?.totalProducts ?? null,
+            previous?.totalProducts ?? null
+        )
     );
 
 
@@ -22157,7 +22468,11 @@ function renderProductPerformanceTrends() {
         document.getElementById(
             "product-total-sales"
         )?.closest(".glass"),
-        salesTrend
+        salesTrend,
+        calculateTrendPct(
+            current?.totalSales ?? null,
+            previous?.totalSales ?? null
+        )
     );
 
 
@@ -22165,7 +22480,11 @@ function renderProductPerformanceTrends() {
         document.getElementById(
             "product-total-orders"
         )?.closest(".glass"),
-        ordersTrend
+        ordersTrend,
+        calculateTrendPct(
+            current?.totalOrders ?? null,
+            previous?.totalOrders ?? null
+        )
     );
 
 
@@ -22173,7 +22492,11 @@ function renderProductPerformanceTrends() {
         document.getElementById(
             "product-total-conversion"
         )?.closest(".glass"),
-        conversionTrend
+        conversionTrend,
+        calculateTrendPct(
+            current?.totalConversion ?? null,
+            previous?.totalConversion ?? null
+        )
     );
 
 }
@@ -22246,12 +22569,20 @@ function renderOverviewAdsTrends() {
 
         setOverviewTrend(
             spendCard,
-            spendTrend
+            spendTrend,
+            calculateTrendPct(
+                spendCurrent,
+                spendPrevious
+            )
         );
 
         setOverviewTrend(
             roasCard,
-            roasTrend
+            roasTrend,
+            calculateTrendPct(
+                roasCurrent,
+                roasPrevious
+            )
         );
 
     }
@@ -29252,6 +29583,13 @@ function renderDashboardPeriodComparison() {
         return (r.produkList || []).reduce(function(a, p){ return a + num(p.qty); }, 0);
     }
 
+    /* total retur laporan: pakai totalRetur tersimpan, fallback jumlah retur per produk */
+    function sumRetur(r){
+        const saved = num(r.totalRetur);
+        if(saved > 0){ return saved; }
+        return (r.produkList || []).reduce(function(a, p){ return a + num(p.retur); }, 0);
+    }
+
     /* opsi toko dibangun dari laporan yang tersimpan; pilihan aktif dipertahankan */
     function syncStoreOptions(all){
         const cur = fStore.value;
@@ -29335,9 +29673,9 @@ function renderDashboardPeriodComparison() {
         histFoot.replaceChildren();
         histBadge.textContent = list.length + " LAPORAN";
 
-        const t = { pcs: 0, omset: 0, modal: 0, ads: 0, lainnya: 0, komisi: 0 };
+        const t = { pcs: 0, retur: 0, omset: 0, modal: 0, ads: 0, lainnya: 0, komisi: 0 };
         list.forEach(function(r){
-            t.pcs += sumPcs(r);
+            t.pcs += sumPcs(r); t.retur += sumRetur(r);
             t.omset += num(r.omset); t.modal += num(r.totalModal);
             t.ads += num(r.ads); t.lainnya += num(r.lainnya); t.komisi += num(r.komisi);
         });
@@ -29387,7 +29725,11 @@ function renderDashboardPeriodComparison() {
 
         const ft = el("tr");
         ft.appendChild(td("", "Total " + list.length + " laporan"));
-        ft.appendChild(td("komisi-foot-pcs", "Total Pcs " + t.pcs.toLocaleString("id-ID")));
+        const fp = td("komisi-foot-pcs", "Total Pcs " + t.pcs.toLocaleString("id-ID"));
+        if(t.retur > 0){
+            fp.appendChild(el("span", "komisi-foot-retur", "Retur " + t.retur.toLocaleString("id-ID")));
+        }
+        ft.appendChild(fp);
         ft.appendChild(td("num", rupiah(t.omset)));
         ft.appendChild(td("num", rupiah(t.modal)));
         const fo = el("td", "num komisi-col-ops komisi-ops-inline");
@@ -29480,6 +29822,7 @@ function renderDashboardPeriodComparison() {
 .app-scene[data-scene="finance"] .komisi-ops-inline .komisi-ops-label:first-child{margin-left:0}
 .app-scene[data-scene="finance"] .komisi-ops-inline .komisi-ops-val{margin-left:5px;font-weight:650}
 .app-scene[data-scene="finance"] .komisi-foot-pcs{white-space:nowrap;font-weight:650}
+.app-scene[data-scene="finance"] .komisi-foot-retur{margin-left:12px;font-weight:600;color:var(--muted)}
 .app-scene[data-scene="finance"] .komisi-history-table tfoot td{vertical-align:top}
 @media (max-width:900px){
     .app-scene[data-scene="finance"] .komisi-sum-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
@@ -31015,6 +31358,274 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
 })();
 </script>
 
+<script id="ai-summary-script">
+/* ============================================================
+   RINGKASAN UNTUK AI  (window.LucaSummary)
+   ------------------------------------------------------------
+   Membangun ringkasan polos (JSON kecil) per toko dan per periode
+   dari data Excel yang sudah tersimpan. TIDAK disimpan di
+   localStorage: dihitung ulang saat dibutuhkan, lalu dikirim lewat
+   sinkron sebagai koleksi "summary" supaya AI (Claude / lainnya)
+   bisa membacanya langsung dari Google Sheet tanpa file Excel.
+
+   - hanya DATA TURUNAN: tidak mengubah data sumber
+   - satu record < 20.000 karakter -> tersimpan sebagai "j:" (terbaca)
+   - tidak memuat waktu pembuatan (hash stabil, tidak kirim ulang tanpa sebab)
+   - aturan margin memakai fungsi Analysis yang sudah ada, diambil dari
+     window.LucaGean (getAnalysisMarginConfig / classifyAnalysisMargin /
+     analysisProductNamesMatch / calculateDanaDilepasHpp) -> satu sumber ambang
+   - pemilihan periode produk (periode aktif + fallback) sama dengan
+     Overview dan calculateAnalysisMargin(); jaga ketiganya tetap sama
+   ============================================================ */
+(function(){
+    "use strict";
+    var LS = window.LucaStores;
+    if(!LS || !LS._raw){ return; }
+    var RAW = LS._raw;
+    var EXCEL_KEY = "luca_gean_excel_data_v1";
+    var DB_KEY = "luca_gean_product_database_v1";
+    var REG_KEY = "luca_gean_stores_v1";
+    var VERSION = 1;
+    var MAX_CHARS = 18000;
+
+    var LABEL = "RINGKASAN DATA UNTUK AI. Dibuat otomatis oleh dashboard Luca x Gean dari file Excel Shopee yang diupload " +
+        "(bukan input manual, bukan sumber utama). BACA-SAJA: jangan diubah atau ditulis oleh AI maupun manusia di sheet ini, " +
+        "karena akan ditimpa otomatis saat data berubah. Panduan membaca: tab PANDUAN_AI di sheet ini.";
+
+    function readJson(k, fb){
+        try{ var v = JSON.parse(RAW.get(k) || "null"); return v === null || v === undefined ? fb : v; }catch(e){ return fb; }
+    }
+    function num(v){ v = Number(v); return isFinite(v) ? v : 0; }
+    function r2(v){ return Math.round(num(v) * 100) / 100; }
+    function ratio(a, b){ return num(b) > 0 ? r2(num(a) / num(b)) : null; }
+    function pad(n){ return (n < 10 ? "0" : "") + n; }
+    function isoDay(ms){ var d = new Date(ms); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
+
+    /* key periode -> {mulai, selesai}. Dana/Produk: tanggal awal (+6 hari). Ads: "awal__akhir". */
+    function periodOf(key){
+        var parts = String(key).split("__"), re = /^(\d{4})-(\d{2})-(\d{2})$/, m;
+        if(parts.length === 2 && re.test(parts[0]) && re.test(parts[1])){ return { mulai: parts[0], selesai: parts[1] }; }
+        m = re.exec(parts[0]);
+        if(m){
+            var t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
+            return { mulai: parts[0], selesai: isoDay(t + 6 * 86400000) };
+        }
+        return { mulai: String(key), selesai: "" };
+    }
+
+    function lastUpload(list){
+        return Array.isArray(list) && list.length ? list[list.length - 1] : null;
+    }
+
+    /* batasi ukuran: buang item paling kecil bila JSON > MAX_CHARS */
+    function fit(rec, listKey, sortFn){
+        var items = rec[listKey];
+        if(!Array.isArray(items)){ return rec; }
+        var total = items.length;
+        items.sort(sortFn);
+        while(items.length > 1 && JSON.stringify(rec).length > MAX_CHARS){ items.pop(); }
+        if(items.length < total){ rec.dipangkas = { ditampilkan: items.length, dari: total, alasan: "dibatasi agar record < 20.000 karakter; urut dari terbesar" }; }
+        return rec;
+    }
+
+    function head(store, modul, key, ket){
+        return {
+            _untuk_AI: true,
+            _label: LABEL,
+            _versi: VERSION,
+            toko: { id: store.id, nama: store.name },
+            modul: modul,
+            keterangan: ket,
+            periode: Object.assign({ key: key }, periodOf(key))
+        };
+    }
+
+    /* ---------- Performa Produk ---------- */
+    function buildProduk(store, key, up){
+        var p = up && up.parsed, rows = p && Array.isArray(p.products) ? p.products : [];
+        if(!rows.length){ return null; }
+        var tot = { dilihat: 0, klik: 0, pesanan: 0, produkTerjual: 0, omzet: 0, pengunjung: 0 };
+        var items = rows.map(function(x){
+            tot.dilihat += num(x.views); tot.klik += num(x.clicks); tot.pesanan += num(x.orders);
+            tot.produkTerjual += num(x.sold); tot.omzet += num(x.sales); tot.pengunjung += num(x.visitors);
+            return {
+                kode: x.code, nama: x.name, status: x.status,
+                dilihat: num(x.views), klik: num(x.clicks), ctr: x.ctr,
+                pesanan: num(x.orders), terjual: num(x.sold), omzet: num(x.sales),
+                konversi: x.conversion, pengunjung: num(x.visitors),
+                keranjang: num(x.cart), konversiKeranjang: x.cartConversion,
+                suka: num(x.likes), klikPencarian: num(x.searchClicks)
+            };
+        });
+        var rec = head(store, "performaProduk", key, "Performa Produk Shopee per produk untuk satu periode. ctr/konversi apa adanya dari Shopee. Urut pesanan terbanyak.");
+        rec.jumlahProduk = items.length;
+        rec.total = tot;
+        rec.produk = items;
+        return fit(rec, "produk", function(a, b){ return (b.pesanan - a.pesanan) || (b.dilihat - a.dilihat); });
+    }
+
+    /* ---------- Ads ---------- */
+    function buildAds(store, key, up){
+        var p = up && up.parsed, rows = p && Array.isArray(p.campaigns) ? p.campaigns : [];
+        if(!rows.length){ return null; }
+        var tot = { biaya: 0, omzet: 0, konversi: 0, terjual: 0, dilihat: 0, klik: 0 };
+        var items = rows.map(function(x){
+            tot.biaya += num(x.spend); tot.omzet += num(x.sales); tot.konversi += num(x.conversions);
+            tot.terjual += num(x.sold); tot.dilihat += num(x.views); tot.klik += num(x.clicks);
+            return {
+                nama: x.name, kodeProduk: x.productCode, status: x.status, jenis: x.type,
+                biaya: num(x.spend), omzet: num(x.sales), roas: x.roas,
+                konversi: num(x.conversions), konversiLangsung: num(x.directConversions),
+                omzetLangsung: num(x.directSales), roasLangsung: x.directRoas,
+                biayaPerKonversi: x.costPerConversion, terjual: num(x.sold),
+                dilihat: num(x.views), klik: num(x.clicks), ctr: x.ctr
+            };
+        });
+        tot.roas = ratio(tot.omzet, tot.biaya);
+        tot.biayaPerKonversi = tot.konversi > 0 ? Math.round(tot.biaya / tot.konversi) : null;
+        var rec = head(store, "ads", key, "Iklan Shopee Ads per kampanye untuk satu periode. Urut biaya terbesar. roas total = omzet / biaya.");
+        rec.jumlahKampanye = items.length;
+        rec.total = tot;
+        rec.kampanye = items;
+        return fit(rec, "kampanye", function(a, b){ return b.biaya - a.biaya; });
+    }
+
+    /* ---------- HPP / margin (aturan = Analysis) ---------- */
+    function G(){ return window.LucaGean || {}; }
+    function dbEntries(){
+        var db = readJson(DB_KEY, {});
+        return Object.keys(db || {}).map(function(k){ var e = db[k] || {}; return { name: String(e.name || k).trim(), hpp: num(e.hpp) }; });
+    }
+    function matchHpp(name, entries){
+        var i, m = typeof G().analysisProductNamesMatch === "function" ? G().analysisProductNamesMatch : null;
+        for(i = 0; i < entries.length; i++){
+            if(entries[i].hpp > 0 && m && m(name, entries[i].name)){ return entries[i].hpp; }
+        }
+        return 0;
+    }
+    function marginInfo(releasePerPcs, hpp){
+        if(!(hpp > 0) || typeof G().getAnalysisMarginConfig !== "function" || typeof G().classifyAnalysisMargin !== "function"){ return { hpp: hpp > 0 ? hpp : null }; }
+        var cfg = G().getAnalysisMarginConfig(), min = hpp + cfg.offSystemCostPerPcs, diff = releasePerPcs - min, v = G().classifyAnalysisMargin(diff);
+        return { hpp: hpp, titikImpas: min, profitPerPcsSetelahOffSystem: r2(diff), status: v.status, tipis: v.thin === true };
+    }
+
+    /* ---------- Dana Dilepas ---------- */
+    function aggregateDana(up){
+        var p = up && up.parsed, sum = p && Array.isArray(p.productSummary) ? p.productSummary : [], det = p && Array.isArray(p.products) ? p.products : [];
+        var map = {}, order = [];
+        function slot(id, name){
+            var k = (id && id !== "-" ? id + "||" : "") + name;
+            if(!map[k]){ map[k] = { nama: name, kodeProduk: id && id !== "-" ? String(id) : "", pcs: 0, omzetDilepas: 0, _o: {}, retur: 0 }; order.push(k); }
+            return map[k];
+        }
+        sum.forEach(function(it){
+            var n = String(it.productName || "").trim(); if(!n || n === "-"){ return; }
+            var s = slot(String(it.productId || "").trim(), n); s.omzetDilepas += num(it.income);
+        });
+        det.forEach(function(r){
+            var n = String(r.productName || "").trim(); if(!n || n === "-"){ return; }
+            var s = slot(String(r.productId || "").trim(), n); s.pcs += 1;
+            if(r.order){ s._o[String(r.order).trim()] = 1; }
+            if(num(r.refund) < 0){ s.retur += 1; }
+        });
+        return order.map(function(k){ var s = map[k]; s.pesanan = Object.keys(s._o).length; delete s._o; return s; });
+    }
+    function buildDana(store, key, up){
+        var p = up && up.parsed;
+        if(!p || (p.released === null || p.released === undefined)){ return null; }
+        var entries = dbEntries(), items = aggregateDana(up), totPcs = 0, totOrders = 0, totRetur = 0, missing = 0;
+        items.forEach(function(s){
+            totPcs += s.pcs; totOrders += s.pesanan; totRetur += s.retur;
+            var rel = s.pcs > 0 ? s.omzetDilepas / s.pcs : 0, hpp = matchHpp(s.nama, entries);
+            s.dilepasPerPcs = s.pcs > 0 ? Math.round(rel) : null;
+            var mi = marginInfo(rel, hpp);
+            Object.keys(mi).forEach(function(f){ s[f] = mi[f]; });
+            if(!(hpp > 0)){ missing++; }
+        });
+        var rec = head(store, "dana-dilepas", key, "Dana Dilepas (uang yang benar-benar cair) satu periode, per produk. 1 baris detail = 1 PCS. hpp dari Database Produk; status margin memakai ambang Analysis (HPP + biaya off-system).");
+        rec.ringkasan = {
+            totalDilepas: num(p.released), totalPendapatan: p.totalIncome, totalPengeluaran: p.totalExpense, penyesuaian: p.adjustment,
+            rincianPendapatan: p.incomeBreakdown || {}, rincianPengeluaran: p.expenseBreakdown || {},
+            totalPcs: totPcs, totalPesanan: totOrders, totalRetur: totRetur, produkTanpaHpp: missing
+        };
+        var hp = null;
+        try{
+            if(window.LucaGean && typeof window.LucaGean.calculateDanaDilepasHpp === "function"){
+                hp = window.LucaGean.calculateDanaDilepasHpp(p, Array.isArray(p.products) ? p.products : [], Array.isArray(p.productSummary) ? p.productSummary : []);
+            }
+        }catch(e){ hp = null; }
+        if(hp){ rec.ringkasan.totalHpp = hp.totalHpp; rec.ringkasan.sisaSetelahHpp = hp.afterHpp; rec.ringkasan.pcsTanpaHpp = hp.missingPcs; }
+        rec.produk = items;
+        return fit(rec, "produk", function(a, b){ return (b.pcs - a.pcs) || (b.omzetDilepas - a.omzetDilepas); });
+    }
+
+    /* ---------- Analisis margin terkini (periode aktif + fallback; urut sama dg calculateAnalysisMargin) ---------- */
+    function buildTerkini(store, danaByPeriod){
+        var keys = Object.keys(danaByPeriod).sort().reverse(), chosen = {}, chosenOrder = [], i;
+        keys.forEach(function(pk){
+            var up = lastUpload(danaByPeriod[pk]), p = up && up.parsed, sum = p && Array.isArray(p.productSummary) ? p.productSummary : [];
+            sum.forEach(function(it){
+                var n = String(it.productName || "").trim(); if(!n || n === "-"){ return; }
+                var id = it.productId && it.productId !== "-" ? String(it.productId).trim() : "", k = id ? id + "||" + n : n;
+                if(chosen[k] || num(it.quantity) <= 0){ return; }
+                chosen[k] = { nama: n, pcs: 0, income: 0, periode: pk };
+                chosenOrder.push(k);
+            });
+            sum.forEach(function(it){
+                var n = String(it.productName || "").trim(), id = it.productId && it.productId !== "-" ? String(it.productId).trim() : "", k = id ? id + "||" + n : n;
+                if(chosen[k] && chosen[k].periode === pk){ chosen[k].pcs += num(it.quantity); chosen[k].income += num(it.income); }
+            });
+        });
+        if(!chosenOrder.length){ return null; }
+        var entries = dbEntries(), out = [];
+        var cfgDb = readJson(DB_KEY, {});
+        Object.keys(cfgDb).forEach(function(k){
+            var e = cfgDb[k] || {}, name = String(e.name || k).trim(), hpp = num(e.hpp);
+            if(!name || hpp <= 0){ return; }
+            var pcs = 0, income = 0, per = {};
+            chosenOrder.forEach(function(ck){
+                var c = chosen[ck];
+                if(typeof G().analysisProductNamesMatch === "function" && G().analysisProductNamesMatch(c.nama, name)){ pcs += c.pcs; income += c.income; per[c.periode] = 1; }
+            });
+            if(pcs <= 0){ return; }
+            var rel = income / pcs, mi = marginInfo(rel, hpp);
+            out.push({ nama: name, pcs: pcs, dilepasPerPcs: Math.round(rel), hpp: hpp, titikImpas: mi.titikImpas, profitPerPcsSetelahOffSystem: mi.profitPerPcsSetelahOffSystem, status: mi.status, tipis: mi.tipis, periodeData: Object.keys(per).sort().reverse() });
+        });
+        var rec = head(store, "analisis-margin-terkini", "terkini", "Status margin TERKINI per produk di Database Produk. Tiap produk memakai SATU periode: periode terbaru tempat produk terjual (periode aktif; bila tidak terjual di sana = periode terakhir terjualnya / fallback; data fallback otomatis diganti bila terjual lagi di periode lebih baru). Aturan sama dengan tabel Overview dan halaman Analisis. status: TINDAKAN (profit/PCS < 0), EVALUASI (< buffer), PERHATIAN, NORMAL.");
+        delete rec.periode;
+        rec.periodeTerbaru = keys[0];
+        rec.ambang = typeof G().getAnalysisMarginConfig === "function" ? G().getAnalysisMarginConfig() : null;
+        rec.produk = out;
+        return fit(rec, "produk", function(a, b){ return (a.profitPerPcsSetelahOffSystem - b.profitPerPcsSetelahOffSystem); });
+    }
+
+    /* ---------- bangun semua record satu toko ---------- */
+    var memo = {};
+    function build(storeId){
+        var raw = RAW.get(EXCEL_KEY + "::" + storeId) || "", dbRaw = RAW.get(DB_KEY) || "", regRaw = RAW.get(REG_KEY) || "";
+        var mk = storeId;
+        if(memo[mk] && memo[mk].raw === raw && memo[mk].db === dbRaw && memo[mk].reg === regRaw){ return memo[mk].out; }
+        var reg = readJson(REG_KEY, { stores: [] }), st = null, out = {};
+        (reg.stores || []).forEach(function(s){ if(s.id === storeId){ st = { id: s.id, name: s.name }; } });
+        if(!st){ st = { id: storeId, name: "" }; }
+        var data = {}; try{ data = JSON.parse(raw || "{}") || {}; }catch(e){ data = {}; }
+        var mods = { performaProduk: buildProduk, ads: buildAds, "dana-dilepas": buildDana }, recName = { performaProduk: "produk", ads: "ads", "dana-dilepas": "dana" };
+        Object.keys(mods).forEach(function(mod){
+            var periods = data[mod] || {};
+            Object.keys(periods).forEach(function(pk){
+                var rec = mods[mod](st, pk, lastUpload(periods[pk]));
+                if(rec){ out[recName[mod] + "|" + pk] = rec; }
+            });
+        });
+        var t = buildTerkini(st, data["dana-dilepas"] || {});
+        if(t){ out["analisis|terkini"] = t; }
+        memo[mk] = { raw: raw, db: dbRaw, reg: regRaw, out: out };
+        return out;
+    }
+
+    window.LucaSummary = { build: build, version: VERSION, label: LABEL };
+})();
+</script>
 <script id="sync-script">
 (function(){
     "use strict";
@@ -31034,7 +31645,9 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
         { name: "komisi", key: "luca_gean_komisi_reports_v1", scoped: false, kind: "array", id: "id" },
         { name: "splitkomisi", key: "luca_gean_komisi_split_rows_v1", scoped: false, kind: "array", id: "id" },
         { name: "db", key: "luca_gean_product_database_v1", scoped: false, kind: "dict" },
-        { name: "stores", key: REG_KEY, scoped: false, kind: "stores" }
+        { name: "stores", key: REG_KEY, scoped: false, kind: "stores" },
+        /* turunan (dihitung dari excel + db): hanya dikirim, tidak pernah ditarik/ditulis ke localStorage */
+        { name: "summary", key: "__derived_summary__", scoped: true, kind: "derived" }
     ];
     function collByName(n){ return COLLS.filter(function(c){ return c.name === n; })[0]; }
     function collByKey(k){ return COLLS.filter(function(c){ return c.key === k; })[0]; }
@@ -31108,6 +31721,10 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
 
     function recordsOf(coll, storeId){
         var m = {}, data;
+        if(coll.kind === "derived"){
+            /* null = gagal membangun -> scan() tidak boleh menganggap semua record hilang */
+            try{ return window.LucaSummary ? window.LucaSummary.build(storeId) : null; }catch(e){ return null; }
+        }
         if(coll.kind === "stores"){
             readJson(REG_KEY, { stores: [] }).stores.forEach(function(s){ m[s.id] = { id: s.id, name: s.name, createdAt: s.createdAt }; });
             return m;
@@ -31128,18 +31745,19 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
     /* tandai record yang berubah / hilang untuk satu koleksi (+toko) */
     function scan(coll, storeId){
         var recs = recordsOf(coll, storeId), prefix = coll.name + "|" + (coll.scoped ? storeId : "-") + "|", n = 0;
+        if(recs === null){ return 0; }
         Object.keys(recs).forEach(function(id){
             var key = prefix + id, h = hash(JSON.stringify(recs[id])), m = meta.recs[key];
             if(!m || m.del || m.h !== h){ if(!out.keys[key]){ out.keys[key] = 1; n++; } }
         });
         Object.keys(meta.recs).forEach(function(key){
-            if(key.indexOf(prefix) === 0 && !meta.recs[key].del && recs[key.slice(prefix.length)] === undefined){
+            if(key.indexOf(prefix) === 0 && !meta.recs[key].del && !meta.recs[key].nd && recs[key.slice(prefix.length)] === undefined){
                 if(!out.keys[key]){ out.keys[key] = 1; n++; }
             }
         });
         return n;
     }
-    function scanAll(){
+    function scanAll(withDerived){
         var stores = readJson(REG_KEY, { stores: [] }).stores, n = 0;
         if(meta.mig !== 3){        /* sekali jalan: record log/experiment yang berisi foto dikirim ulang agar fotonya pindah ke Drive */
             COLLS.forEach(function(c){
@@ -31155,9 +31773,19 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
             meta.mig = 3; saveMeta();
         }
         COLLS.forEach(function(c){
+            if(c.kind === "derived" && !withDerived){ return; }
             if(c.scoped){ stores.forEach(function(s){ n += scan(c, s.id); }); }
             else{ n += scan(c, "-"); }
         });
+        saveOut();
+        return n;
+    }
+    /* ringkasan AI: hanya dipindai setelah data lokal terbukti terbaru (habis tarik) atau habis perubahan lokal */
+    function scanDerived(allStores){
+        var c = collByName("summary"), n = 0;
+        if(!c){ return 0; }
+        if(allStores){ readJson(REG_KEY, { stores: [] }).stores.forEach(function(s){ n += scan(c, s.id); }); }
+        else{ var a = LS.activeId(); if(a){ n += scan(c, a); } }
         saveOut();
         return n;
     }
@@ -31165,7 +31793,9 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
     function readRecord(key){
         var p = parseKey(key);
         if(!p.coll){ return undefined; }
-        return recordsOf(p.coll, p.storeId)[p.recId];
+        var all = recordsOf(p.coll, p.storeId);
+        if(all === null){ throw new Error("ringkasan belum siap"); }
+        return all[p.recId];
     }
 
     /* ---------- network ---------- */
@@ -31343,6 +31973,14 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
             if(out.keys[row.key]){ continue; }                      /* perubahan lokal belum terkirim → lokal menang */
             var p = parseKey(row.key);
             if(!p.coll){ continue; }
+            if(p.coll.kind === "derived"){                              /* ringkasan AI: tidak pernah ditulis balik ke perangkat */
+                var dm = meta.recs[row.key];
+                if(!row.deleted && !dm){                                /* catat hash (nd = bukan milik perangkat ini → tak boleh memicu hapus) agar build identik tidak dikirim ulang */
+                    var dv = await decode(row);
+                    if(dv){ meta.recs[row.key] = { h: hash(JSON.stringify(dv)), rev: row.rev, del: false, nd: 1 }; }
+                }
+                continue;
+            }
             if(p.coll.scoped && !stores.some(function(s){ return s.id === p.storeId; })){ continue; }
             var v = row.deleted ? null : await decode(row);
             var ext = 0;
@@ -31424,6 +32062,8 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
         timers[k] = setTimeout(function(){
             if(k === REG_KEY){ scanAll(); flush(); return; }
             if(c.scoped){ var a = LS.activeId(); if(a){ scan(c, a); } } else{ scan(c, "-"); }
+            if(c.name === "excel"){ scanDerived(false); }
+            else if(c.name === "db"){ scanDerived(true); }
             saveOut(); flush();
         }, 2500);
     };
@@ -31433,7 +32073,7 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
         if(!ready()){ return; }
         var r = await pull(true, true);
         if(r.error){ return; }
-        scanAll();
+        scanAll(true);
         await flush();
     }
     async function saveAndTest(url, token){
@@ -31486,7 +32126,10 @@ html[data-theme="guardian"] .app-scene[data-scene="finance"] #ksSave{
             if(pending()){ await flush(); }
             if(cfg.checkOnOpen && Date.now() - (cfg.lastCheck || 0) > CHECK_EVERY){
                 cfg.lastCheck = Date.now(); saveCfg();
-                pull(false, true);
+                var pr = await pull(false, true);
+                if(pr && !pr.error && !pr.changed){ scanDerived(true); await flush(); }      /* ringkasan AI: hanya bila data lokal sudah dicocokkan dengan sheet */
+            }else if(cfg.checkOnOpen){
+                scanDerived(true); await flush();
             }
         }, 1500);
     });
