@@ -4262,11 +4262,6 @@ html[data-theme="guardian"] .dana-hpp-box{
             Performa Produk
         </button>
 
-<button data-view="ads">
-            <span class="nav-icon">⌁</span>
-            Ads
-        </button>
-
 <button class="nav-dana-dilepas" data-view="dana">
             <span class="nav-icon">₽</span>
             Dana Dilepas
@@ -4282,14 +4277,14 @@ html[data-theme="guardian"] .dana-hpp-box{
             Analisis
         </button>
 
-<button data-view="eksperimen">
-            <span class="nav-icon">◌</span>
-            Eksperimen
-        </button>
-
 <button data-view="log">
             <span class="nav-icon">≡</span>
             Log Perubahan
+        </button>
+
+<button data-view="eksperimen">
+            <span class="nav-icon">◌</span>
+            Eksperimen
         </button>
 
 <button class="nav-item" data-view="upload">
@@ -4621,34 +4616,6 @@ html[data-theme="guardian"] .dana-hpp-box{
             >
         </div>
 
-        <div class="period period-comparison">
-    <span class="section-note">
-        Periode
-    </span>
-
-    <div class="period-comparison-values">
-        <span
-            class="period-range"
-            id="period-previous"
-        >
-            —
-        </span>
-
-        <span
-            class="period-arrow"
-            aria-hidden="true"
-        >
-            ⇅
-        </span>
-
-        <span
-            class="period-range"
-            id="period-current"
-        >
-            —
-        </span>
-    </div>
-</div>
 
     </div>
 
@@ -5180,7 +5147,7 @@ html[data-theme="guardian"] .dana-hpp-box{
 
 <section class="app-scene" data-scene="produk">
 
-    <div style="padding-bottom:40px;">
+    <div style="padding-bottom:0;">
 
         <!-- =====================================================
              PERFORMA PRODUK HEADER
@@ -5197,10 +5164,12 @@ html[data-theme="guardian"] .dana-hpp-box{
                     Performa Produk
                 </h2>
 
-                <div class="section-note">
-                    Pantau traffic, penjualan, pesanan, conversion,
-                    dan performa setiap produk.
-                </div>
+                <div class="section-note period-line" id="produk-period-line">
+                        <span>Periode</span>
+                        <span class="period-line-range" id="produk-period-previous">—</span>
+                        <span class="period-line-arrow" aria-hidden="true">⇄</span>
+                        <span class="period-line-range" id="produk-period-current">—</span>
+                    </div>
             </div>
 
             <span class="badge green">
@@ -5485,21 +5454,9 @@ html[data-theme="guardian"] .dana-hpp-box{
 </div>
 </div>
 
-</section>
+    <div style="padding-top:28px;padding-bottom:40px;">
 
-
-<section class="app-scene" data-scene="ads">
-
-    <div style="
-        padding-bottom:40px;
-    ">
-
-
-        <!-- ADS HEADER -->
-
-        <!-- ADS SECTION HEADER REMOVED -->
-
-
+        <!-- ADS (dipindahkan dari scene Ads) -->
         <!-- ADS SUMMARY -->
 
         <div class="scene-block">
@@ -5511,8 +5468,11 @@ html[data-theme="guardian"] .dana-hpp-box{
                         Ringkasan Ads
                     </h2>
 
-                    <div class="section-note">
-                        Ringkasan performa iklan pada periode terpilih.
+                    <div class="section-note period-line" id="ads-period-line">
+                        <span>Periode</span>
+                        <span class="period-line-range" id="ads-period-previous">—</span>
+                        <span class="period-line-arrow" aria-hidden="true">⇄</span>
+                        <span class="period-line-range" id="ads-period-current">—</span>
                     </div>
                 </div>
 
@@ -5746,9 +5706,12 @@ html[data-theme="guardian"] .dana-hpp-box{
                 Dana Dilepas
             </h2>
 
-            <div class="section-note">
-                Penjualan yang sudah dilepas ke saldo
-            </div>
+            <div class="section-note period-line" id="dana-period-line">
+                        <span>Periode</span>
+                        <span class="period-line-range" id="dana-period-previous">—</span>
+                        <span class="period-line-arrow" aria-hidden="true">⇄</span>
+                        <span class="period-line-range" id="dana-period-current">—</span>
+                    </div>
         </div>
 
         <span class="badge green">
@@ -8801,88 +8764,29 @@ html[data-theme="guardian"] .dana-hpp-box{
 
     </details>
 
-
-
-<!-- =========================================================
-     ANALYSIS — RETURN
-========================================================= -->
-
-<section class="scene-block" id="analysis-return-section">
-
-    <div class="section-header">
-
-        <div>
-            <h2 class="section-title">
-                Return Tinggi
-            </h2>
-
-            <div class="section-note">
-                Pengembalian barang yang perlu diperhatikan
-            </div>
+    <!-- BUFFER TERKUMPUL (default tertutup) -->
+    <details class="glass analysis-howto analysis-buffer" id="analysis-buffer-box">
+        <summary>
+            <span class="analysis-buffer-head">
+                <span class="analysis-buffer-label">Total Buffer</span>
+                <span class="analysis-buffer-total" id="analysis-buffer-total">Rp0</span>
+                <span class="analysis-buffer-period" id="analysis-buffer-period">Belum ada data</span>
+            </span>
+            <span class="analysis-howto-arrow" aria-hidden="true"></span>
+        </summary>
+        <div class="analysis-buffer-list" id="analysis-buffer-list"></div>
+        <div class="analysis-buffer-how">
+            <strong style="color:var(--text)">Cara baca:</strong>
+            Buffer produk = (profit aktual / PCS − buffer
+            <span data-margin-cfg="buffer">Rp2.100</span> / PCS) × PCS terjual.
+            Hijau = di atas bantalan, merah = memakai bantalan.
+            Total Buffer = jumlah semua produk. Panah di kiri angka = perubahan dibanding periode sebelumnya:
+            angka positif naik hijau / turun merah, angka negatif turun hijau / naik merah.
+            Arahkan kursor (atau ketuk) angka untuk melihat nilai periode sebelumnya.
         </div>
-
-        <span
-            class="section-note-badge"
-        >
-            Return / Order
-        </span>
-
-    </div>
-
-    <div class="glass table-card">
-
-        <div class="table-wrap">
-
-            <table class="analysis-return-table">
-
-                <thead>
-                    <tr>
-
-                        <th>
-                            PRODUK
-                        </th>
-
-                        <th>
-                            ORDER
-                        </th>
-
-                        <th>
-                            RETURN
-                        </th>
-
-                        <th>
-                            RASIO
-                        </th>
-
-                        <th>
-                            STATUS
-                        </th>
-
-                    </tr>
-                </thead>
-
-                
-<tbody id="analysis-return-list">
-
-    <tr>
-        <td
-            colspan="5"
-            class="analysis-return-empty"
-        >
-            Memuat analisis return...
-        </td>
-    </tr>
-
-</tbody>
+    </details>
 
 
-            </table>
-
-        </div>
-
-    </div>
-
-</section>
 
 <!-- =========================================================
      ANALYSIS — ADS
@@ -9006,49 +8910,86 @@ html[data-theme="guardian"] .dana-hpp-box{
 
 </section>
 
-</section>
+<!-- =========================================================
+     ANALYSIS — RETURN
+========================================================= -->
 
-<section class="app-scene" data-scene="eksperimen">
+<section class="scene-block" id="analysis-return-section">
 
-    <div style="
-        padding-bottom:40px;
-    ">
+    <div class="section-header">
 
-        <div class="section-header">
+        <div>
+            <h2 class="section-title">
+                Return Tinggi
+            </h2>
 
-            <div>
-                <h2 class="section-title">
-                    Eksperimen
-                </h2>
-
-                <div class="section-note">
-                    Workspace untuk mengukur perubahan dari BEFORE sampai KESIMPULAN.
-                </div>
+            <div class="section-note">
+                Pengembalian barang yang perlu diperhatikan
             </div>
-
-            <span
-                class="badge"
-                style="
-                    color:var(--accent);
-                    border-color:rgba(var(--acc-rgb),.20);
-                    background:rgba(var(--acc-rgb),.08);
-                "
-            >
-                TESTING
-            </span>
-
         </div>
 
-
-        <div
-            id="experiment-workspace"
-            style="
-                margin-top:14px;
-            "
+        <span
+            class="section-note-badge"
         >
+            Return / Order
+        </span>
+
+    </div>
+
+    <div class="glass table-card">
+
+        <div class="table-wrap">
+
+            <table class="analysis-return-table">
+
+                <thead>
+                    <tr>
+
+                        <th>
+                            PRODUK
+                        </th>
+
+                        <th>
+                            ORDER
+                        </th>
+
+                        <th>
+                            RETURN
+                        </th>
+
+                        <th>
+                            RASIO
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                    </tr>
+                </thead>
+
+                
+<tbody id="analysis-return-list">
+
+    <tr>
+        <td
+            colspan="5"
+            class="analysis-return-empty"
+        >
+            Memuat analisis return...
+        </td>
+    </tr>
+
+</tbody>
+
+
+            </table>
+
         </div>
 
     </div>
+
+</section>
 
 </section>
 
@@ -10037,6 +9978,50 @@ html[data-theme="guardian"] .dana-hpp-box{
 
 </section>
 
+<section class="app-scene" data-scene="eksperimen">
+
+    <div style="
+        padding-bottom:40px;
+    ">
+
+        <div class="section-header">
+
+            <div>
+                <h2 class="section-title">
+                    Eksperimen
+                </h2>
+
+                <div class="section-note">
+                    Workspace untuk mengukur perubahan dari BEFORE sampai KESIMPULAN.
+                </div>
+            </div>
+
+            <span
+                class="badge"
+                style="
+                    color:var(--accent);
+                    border-color:rgba(var(--acc-rgb),.20);
+                    background:rgba(var(--acc-rgb),.08);
+                "
+            >
+                TESTING
+            </span>
+
+        </div>
+
+
+        <div
+            id="experiment-workspace"
+            style="
+                margin-top:14px;
+            "
+        >
+        </div>
+
+    </div>
+
+</section>
+
 <section class="app-scene" data-scene="upload">
 <section class="section scene-block excel-import-workspace" id="excel-data">
 
@@ -10475,10 +10460,6 @@ html[data-theme="guardian"] .dana-hpp-box{
         Performa
     </button>
 
-    <button data-view="ads">
-        Ads
-    </button>
-
     <button data-view="dana">
         Dana Dilepas
     </button>
@@ -10491,12 +10472,12 @@ html[data-theme="guardian"] .dana-hpp-box{
         Analisis
     </button>
 
-    <button data-view="eksperimen">
-        Eksperimen
-    </button>
-
     <button data-view="log">
         Log
+    </button>
+
+    <button data-view="eksperimen">
+        Eksperimen
     </button>
 
     <button data-view="upload">
@@ -16660,7 +16641,7 @@ function updateAnalysisMarginLabels() {
             }
         });
 }
-function calculateAnalysisMargin() {
+function calculateAnalysisMargin(options) {
 
     const database =
         loadProductDatabase();
@@ -16700,8 +16681,18 @@ function calculateAnalysisMargin() {
         typeof dana === "object"
     ) {
 
+        /* options.before (opsional, string periodKey): hanya periode SEBELUM itu
+           (dipakai pembanding "periode sebelum"). Tanpa options = perilaku lama. */
+        const beforeKey =
+            options && typeof options.before === "string"
+                ? options.before
+                : "";
+
         const periodKeys =
-            Object.keys(dana).sort().reverse();
+            Object.keys(dana).sort().reverse()
+                .filter(function (k) {
+                    return !beforeKey || k < beforeKey;
+                });
 
         for (
             const periodKey of periodKeys
@@ -17093,7 +17084,10 @@ function calculateAnalysisMargin() {
                 marginConfig.offSystemCostPerPcs,
 
             bufferPerPcs:
-                marginConfig.bufferPerPcs
+                marginConfig.bufferPerPcs,
+
+            periodKey:
+                newestPeriod
 
         });
 
@@ -17211,6 +17205,116 @@ function renderAnalysisNormalSummary(items) {
     }
 }
 
+function renderAnalysisBuffer(items) {
+    /* Buffer produk = (profit aktual / PCS − buffer / PCS) × PCS.
+       Memakai data calculateAnalysisMargin (satu sumber); tanpa rumus profit baru. */
+    const totalEl = document.getElementById("analysis-buffer-total");
+    const periodEl = document.getElementById("analysis-buffer-period");
+    const listEl = document.getElementById("analysis-buffer-list");
+    if (!totalEl || !periodEl || !listEl) { return; }
+    const MON = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    function label(key) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ""));
+        if (!m) { return String(key || "—"); }
+        const a = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+        const b = new Date(a.getTime() + 6 * 86400000);
+        const am = MON[a.getUTCMonth()], bm = MON[b.getUTCMonth()];
+        return (am === bm
+            ? a.getUTCDate() + "–" + b.getUTCDate() + " " + bm
+            : a.getUTCDate() + " " + am + " – " + b.getUTCDate() + " " + bm) + " " + b.getUTCFullYear();
+    }
+    /* pembanding: tiap produk vs periode sebelum periodenya (engine yang sama, opsi before) */
+    const prevByKey = new Map();
+    Array.from(new Set(items.map(function (i) { return String(i.periodKey || ""); }))).forEach(function (k) {
+        if (!k) { return; }
+        let prevData = [];
+        try { prevData = calculateAnalysisMargin({ before: k }) || []; } catch (e) { prevData = []; }
+        prevData.forEach(function (pr) { prevByKey.set(k + "||" + pr.name, pr); });
+    });
+    const rows = items.map(function (item) {
+        const pr = prevByKey.get(String(item.periodKey || "") + "||" + item.name);
+        return {
+            name: item.name,
+            pcs: item.pcs,
+            periodKey: item.periodKey,
+            buffer: (item.difference - item.bufferPerPcs) * item.pcs,
+            prevBuffer: pr ? (pr.difference - pr.bufferPerPcs) * pr.pcs : null
+        };
+    }).sort(function (a, b) { return b.buffer - a.buffer; });
+    const total = rows.reduce(function (s, r) { return s + r.buffer; }, 0);
+    totalEl.textContent = (total < 0 ? "Rp-" : "Rp") + Math.abs(Math.round(total)).toLocaleString("id-ID");
+    totalEl.className = "analysis-buffer-total " + (total < 0 ? "analysis-buffer-neg" : "analysis-buffer-pos");
+    while (listEl.firstChild) { listEl.removeChild(listEl.firstChild); }
+    if (!rows.length) {
+        totalEl.className = "analysis-buffer-total";
+        periodEl.textContent = "Belum ada data";
+        const empty = document.createElement("div");
+        empty.className = "analysis-buffer-empty";
+        empty.textContent = "Belum ada produk dengan data HPP & penjualan.";
+        listEl.appendChild(empty);
+        return;
+    }
+    const newest = rows.reduce(function (l, r) { return String(r.periodKey || "") > l ? String(r.periodKey || "") : l; }, "");
+    const older = rows.filter(function (r) { return String(r.periodKey || "") !== newest; }).length;
+    periodEl.textContent = "Periode " + label(newest) + (older ? " · " + older + " produk dari periode lebih lama" : "");
+    let tip = document.getElementById("analysis-buffer-tip");
+    if (!tip) {
+        tip = document.createElement("div");
+        tip.id = "analysis-buffer-tip";
+        document.getElementById("analysis-buffer-box").appendChild(tip);
+    }
+    rows.forEach(function (r) {
+        const row = document.createElement("div");
+        row.className = "analysis-buffer-row";
+        const nameEl = document.createElement("span");
+        nameEl.className = "analysis-buffer-name";
+        nameEl.textContent = productDisplayName(r.name);
+        nameEl.title = String(r.name || "");
+        row.appendChild(nameEl);
+        function money(n) { return (n < 0 ? "Rp. -" : "Rp. ") + Math.abs(Math.round(n)).toLocaleString("id-ID"); }
+        const hasPrev = r.prevBuffer !== null;
+        const tipText = hasPrev ? "Periode sebelum " + money(r.prevBuffer) : "Periode sebelum: belum ada data";
+        function show() {
+            tip.textContent = tipText;
+            tip.style.display = "block";
+            /* relatif ke kotak (tahan terhadap zoom/skala UI): selisih rect dibagi skala */
+            const box = document.getElementById("analysis-buffer-box");
+            const q = val.getBoundingClientRect(), bq = box.getBoundingClientRect();
+            const k = (box.offsetWidth ? bq.width / box.offsetWidth : 1) || 1;
+            tip.style.left = Math.max(8, Math.min(box.offsetWidth - tip.offsetWidth - 8, (q.right - bq.left) / k - tip.offsetWidth)) + "px";
+            tip.style.top = Math.max(4, (q.top - bq.top) / k - tip.offsetHeight - 4) + "px";
+        }
+        function hide() { tip.style.display = "none"; }
+        const pcs = document.createElement("span");
+        pcs.className = "analysis-buffer-pcs";
+        pcs.textContent = r.pcs.toLocaleString("id-ID") + " pcs";
+        const val = document.createElement("span");
+        val.className = "analysis-buffer-val " + (r.buffer < 0 ? "analysis-buffer-neg" : "analysis-buffer-pos");
+        val.tabIndex = 0;
+        /* panah tren (kiri angka): sama tanda -> dibandingkan besar angkanya (|nilai|);
+           naik = hijau bila angka positif, merah bila angka negatif; turun kebalikannya.
+           Beda tanda (mis. + menjadi −) -> arah nilai sebenarnya (naik hijau, turun merah). */
+        if (hasPrev && r.buffer !== r.prevBuffer) {
+            const sameSign = (r.buffer >= 0) === (r.prevBuffer >= 0);
+            const up = sameSign ? Math.abs(r.buffer) > Math.abs(r.prevBuffer) : r.buffer > r.prevBuffer;
+            const good = sameSign ? (r.buffer >= 0 ? up : !up) : up;
+            const arrow = document.createElement("span");
+            arrow.className = "analysis-buffer-arrow " + (good ? "analysis-buffer-pos" : "analysis-buffer-neg");
+            arrow.textContent = up ? "\u25B2" : "\u25BC";
+            arrow.setAttribute("aria-hidden", "true");
+            val.appendChild(arrow);
+        }
+        val.appendChild(document.createTextNode((r.buffer < 0 ? "Rp-" : "Rp") + Math.abs(Math.round(r.buffer)).toLocaleString("id-ID")));
+        val.setAttribute("aria-label", "Buffer " + productDisplayName(r.name) + ". " + tipText);
+        val.addEventListener("mouseenter", show);
+        val.addEventListener("mouseleave", hide);
+        val.addEventListener("focus", show);
+        val.addEventListener("blur", hide);
+        row.appendChild(pcs);
+        row.appendChild(val);
+        listEl.appendChild(row);
+    });
+}
 function renderAnalysisMargin() {
 
     const list =
@@ -17272,6 +17376,8 @@ function renderAnalysisMargin() {
             item => item.status === "NORMAL"
         )
     );
+
+    renderAnalysisBuffer(data);
 
 
     if (productCount) {
@@ -19125,13 +19231,31 @@ function saveUpload(
 
         setText(
             "dana-report-source",
-            latest.file?.name || "—"
+            latest.file?.filename || latest.file?.name || "—"
         );
 
 
+        /* Periode laporan: dari nama file (21 Sep 2026 — 27 Sep 2026); fallback ke kunci periode */
+        let danaPeriodText = latest.period || "—";
+        try{
+            const dp =
+                typeof getDashboardPeriodFromFilename === "function"
+                    ? getDashboardPeriodFromFilename(
+                        latest.file?.filename || latest.file?.name,
+                        latest.period
+                    )
+                    : null;
+            if(dp && dp.start){
+                danaPeriodText =
+                    dp.start === dp.end
+                        ? dp.start
+                        : dp.start + " — " + dp.end;
+            }
+        }catch(err){ /* tampilkan kunci periode apa adanya */ }
+
         setText(
             "dana-report-period-label",
-            latest.period || "—"
+            danaPeriodText
         );
 
         renderDanaDilepasSummaryTrends();
@@ -20787,10 +20911,10 @@ function saveUpload(
         },
 
         produk:{
-            eyebrow:"WORKSPACE",
+            eyebrow:"MARKETING",
             title:"Performa Produk",
             subtitle:
-                "Pantau produk, margin, traffic, cart, dan conversion."
+                "Pantau produk, margin, traffic, cart, ads dan conversion."
         },
 
         eksperimen:{
@@ -20901,25 +21025,55 @@ function saveUpload(
     }
 
 
-    function updateTopbarPeriod(view){
+    function updateTopbarPeriod(view, targets){
 
+        /* Periode tidak lagi di top bar: tiap scene punya baris periode sendiri
+           (Performa Produk, Dana Dilepas, Ringkasan Ads). Tanpa targets = isi ketiganya;
+           sumber data & aturan periode per jenis tidak berubah. */
+        if(!targets){
+            /* getDashboardPeriodFromFilename didefinisikan di script berikutnya: saat go() awal
+               dipanggil belum tersedia. Isi ulang sekali setelah halaman selesai dimuat. */
+            if(typeof getDashboardPeriodFromFilename !== "function" && !updateTopbarPeriod.waitLoad){
+                updateTopbarPeriod.waitLoad = true;
+                window.addEventListener("load", function(){ updateTopbarPeriod(); });
+            }
+            ["produk", "dana", "ads"].forEach(function(v){
+                const pe = document.getElementById(v + "-period-previous");
+                const ce = document.getElementById(v + "-period-current");
+                if(pe && ce){
+                    try{
+                        updateTopbarPeriod(v, { previousEl: pe, currentEl: ce });
+                    }catch(err){ /* satu jenis periode gagal tidak boleh menghentikan yang lain / navigasi */ }
+                }
+            });
+            return;
+        }
+
+        /* targets (opsional) = tulis hasil ke elemen lain (mis. baris periode Ringkasan Ads),
+           tanpa menyentuh kotak periode di top bar. Tanpa targets = perilaku lama. */
         const periodBox =
-            document.querySelector(
-                ".period.period-comparison"
-            );
+            targets
+                ? null
+                : document.querySelector(
+                    ".period.period-comparison"
+                );
 
         const previousEl =
-            document.getElementById(
-                "period-previous"
-            );
+            targets
+                ? targets.previousEl
+                : document.getElementById(
+                    "period-previous"
+                );
 
         const currentEl =
-            document.getElementById(
-                "period-current"
-            );
+            targets
+                ? targets.currentEl
+                : document.getElementById(
+                    "period-current"
+                );
 
         if(
-            !periodBox ||
+            (!targets && !periodBox) ||
             !previousEl ||
             !currentEl
         ){
@@ -20936,7 +21090,7 @@ function saveUpload(
             !periodViews.includes(view)
         ){
 
-            periodBox.style.display = "none";
+            if(periodBox){ periodBox.style.display = "none"; }
 
             previousEl.textContent = "—";
             currentEl.textContent = "—";
@@ -20945,7 +21099,7 @@ function saveUpload(
 
         }
 
-        periodBox.style.display = "";
+        if(periodBox){ periodBox.style.display = ""; }
 
         const store =
             typeof loadStore === "function"
@@ -21129,9 +21283,17 @@ function saveUpload(
                             period.end
                         ){
 
+                            /* period Ads berformat ISO (YYYY-MM-DD) -> samakan dgn Produk/Dana: "28 Sep 2026" */
+                            const fmtAdsDate = function(v){
+                                const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ""));
+                                if(m && typeof formatDashboardPeriodDate === "function"){
+                                    return formatDashboardPeriodDate(m[1] + m[2] + m[3]) || v;
+                                }
+                                return v;
+                            };
                             pushPeriod(
-                                period.start,
-                                period.end,
+                                fmtAdsDate(period.start),
+                                fmtAdsDate(period.end),
                                 period.start
                             );
 
@@ -28840,139 +29002,6 @@ function getDashboardPeriodFromFilename(
 }
 
 
-function renderDashboardPeriodComparison() {
-
-    const previousEl =
-        document.getElementById(
-            "period-previous"
-        );
-
-    const currentEl =
-        document.getElementById(
-            "period-current"
-        );
-
-    if (
-        !previousEl ||
-        !currentEl
-    ) {
-        return;
-    }
-
-    const store =
-        typeof loadStore === "function"
-            ? loadStore()
-            : {};
-
-    const moduleData =
-        store &&
-        store.performaProduk;
-
-    if (
-        !moduleData ||
-        typeof moduleData !== "object"
-    ) {
-        previousEl.textContent = "—";
-        currentEl.textContent = "—";
-        return;
-    }
-
-    const periods = [];
-
-    Object.keys(moduleData).forEach(
-        periodKey => {
-
-            const uploads =
-                Array.isArray(
-                    moduleData[periodKey]
-                )
-                    ? moduleData[periodKey]
-                    : [];
-
-            if (!uploads.length) {
-                return;
-            }
-
-            let latest = null;
-
-            uploads.forEach(
-                item => {
-
-                    if (
-                        !item ||
-                        typeof item !== "object"
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        !latest ||
-                        String(
-                            item.uploadedAt || ""
-                        ) >
-                        String(
-                            latest.uploadedAt || ""
-                        )
-                    ) {
-                        latest = item;
-                    }
-
-                }
-            );
-
-            if (!latest) {
-                return;
-            }
-
-            const parsed =
-                getDashboardPeriodFromFilename(
-                    latest.filename,
-                    periodKey
-                );
-
-            if (!parsed) {
-                return;
-            }
-
-            periods.push({
-                sortKey: parsed.sortKey,
-                start: parsed.start,
-                end: parsed.end
-            });
-
-        }
-    );
-
-    periods.sort(
-        (a, b) =>
-            String(a.sortKey)
-                .localeCompare(
-                    String(b.sortKey)
-                )
-    );
-
-    const current =
-        periods[
-            periods.length - 1
-        ];
-
-    const previous =
-        periods.length >= 2
-            ? periods[
-                periods.length - 2
-            ]
-            : null;
-
-    previousEl.textContent =
-        previous
-            ? `${previous.start} — ${previous.end}`
-            : "—";
-
-    currentEl.textContent =
-        current
-            ? `${current.start} — ${current.end}`
-            : "—";
-}
 
 
 </script>
@@ -30142,6 +30171,37 @@ function renderDashboardPeriodComparison() {
 .analysis-howto-body [data-margin-cfg]{color:var(--text);font-weight:650}
 </style>
 
+<style id="analysis-buffer-style">
+.analysis-buffer{margin-bottom:22px}
+.analysis-buffer>summary{align-items:flex-start;padding:14px 18px}
+.analysis-buffer-head{display:flex;flex-direction:column;gap:2px;min-width:0}
+.analysis-buffer-label{font-size:11px;font-weight:650;color:var(--text)}
+.analysis-buffer-total{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.analysis-buffer-period{font-size:9.5px;color:var(--muted)}
+.analysis-buffer>summary .analysis-howto-arrow{margin-top:10px}
+.analysis-buffer-pos{color:#7ddba0}.analysis-buffer-neg{color:#ff7d86}
+.analysis-buffer-list{max-height:210px;overflow-y:auto;overflow-x:hidden;padding:0 18px;overscroll-behavior:contain}
+.analysis-buffer-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(var(--fg-rgb),.08);font-size:11px;font-variant-numeric:tabular-nums}
+.analysis-buffer-row:first-child{border-top:0}
+.analysis-buffer-name{flex:0 1 auto;max-width:55%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.analysis-buffer-pcs{flex:1;color:var(--muted);font-size:10px;white-space:nowrap}
+.analysis-buffer-val{display:inline-flex;align-items:center;gap:5px;font-weight:650;white-space:nowrap;cursor:help;outline:none}
+.analysis-buffer-arrow{font-size:8px;line-height:1}
+.analysis-buffer-empty{padding:6px 0 10px;font-size:10.5px;color:var(--muted)}
+.analysis-buffer-how{margin:8px 18px 0;padding:10px 0 15px;border-top:1px solid rgba(var(--fg-rgb),.14);font-size:10px;line-height:1.7;color:var(--muted)}
+.analysis-buffer-how [data-margin-cfg]{color:var(--text);font-weight:650}
+#analysis-buffer-box{position:relative}
+#analysis-buffer-tip{position:absolute;z-index:20;display:none;pointer-events:none;white-space:nowrap;padding:5px 9px;border-radius:8px;font-size:10.5px;color:var(--text);background:var(--solid,#14161d);border:1px solid rgba(var(--fg-rgb),.2)}
+</style>
+
+<style id="period-line-style">
+.period-line{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.period-line-arrow{font-size:13px;line-height:1;opacity:.8}
+.period-line-range{color:var(--text);font-variant-numeric:tabular-nums}
+/* panel detail produk (di dalam alur) memberi jarak ke blok di atas/bawahnya */
+#product-performance-detail-overlay.open{margin-top:24px;margin-bottom:24px}
+</style>
+
 <style id="mobile-v6-style">
 /* Mobile: jarak bawah container = jarak atas (topbar → container),
    label bottom nav huruf kapital */
@@ -30496,6 +30556,10 @@ function renderDashboardPeriodComparison() {
     background:rgba(var(--fg-rgb),.06);color:var(--text);font:inherit;font-size:10px;font-weight:650;letter-spacing:.03em;white-space:nowrap
 }
 .settings-store-btn:hover{background:rgba(var(--fg-rgb),.12)}
+/* daftar pilihan <select> (popup bawaan browser) mengikuti tema: sebelumnya putih polos dgn teks terang */
+select{color-scheme:dark}
+html[data-theme="light"] select{color-scheme:light}
+select option,select optgroup{background-color:var(--solid);color:var(--text)}
 .settings-store-btn.is-wide{width:100%}
 .settings-store-btn.is-danger{border-color:rgba(var(--red-rgb),.55);color:var(--bad)}
 .settings-store-btn.is-primary{border-color:rgba(var(--acc-rgb),.5);color:var(--accent,var(--text))}
@@ -34106,63 +34170,6 @@ html[data-theme="guardian"] .product-performance-variation-table td{
         max-height:40vh;
     }
 }
-
-/* ============================================================
-   PERIOD COMPARISON
-   ============================================================ */
-
-.period.period-comparison{
-    display:grid;
-    grid-template-columns:auto auto;
-    align-items:center;
-    column-gap:3px;
-    width:auto;
-}
-
-.period.period-comparison .section-note{
-    padding:6px 10px;
-    border:1px solid rgba(var(--fg-rgb),.08);
-    border-radius:8px;
-    background:rgba(var(--fg-rgb),.035);
-    color:var(--accent);
-    font-size:10px;
-    font-weight:600;
-    letter-spacing:.3px;
-    display:flex;
-    align-items:center;
-    white-space:nowrap;
-    text-align:left;
-}
-
-.period.period-comparison .period-comparison-values{
-    padding:0 8px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:3px;
-    min-width:0;
-}
-
-.period.period-comparison .period-range{
-    color:rgb(var(--fg-rgb));
-    font-size:10px;
-    font-weight:600;
-    letter-spacing:.3px;
-    display:block;
-    white-space:nowrap;
-    text-align:center;
-}
-
-.period.period-comparison .period-arrow{
-    color:rgb(var(--fg-rgb));
-    font-weight:600;
-    display:block;
-    line-height:1;
-    font-size:14px;
-    height:14px;
-}
-
 
 
 /* FINANCE UI CORRECTION 1 */
