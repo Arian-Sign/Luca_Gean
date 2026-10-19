@@ -16505,6 +16505,108 @@ window.analysisProductNamesMatch = analysisProductNamesMatch;
  * panjang/pendek dengan selisih panjang terkecil. Seri → urutan database.
  * Mengembalikan key database atau null.
  */
+/*
+ * Alias nama produk lewat KODE PRODUK.
+ * Shopee kadang mengganti judul produk (kode tetap), sehingga nama di laporan
+ * tidak lagi cocok dengan nama di Database Produk. Indeks ini mengumpulkan
+ * pasangan kode ↔ nama dari laporan yang sudah diunggah toko aktif
+ * (Performa Produk dan Dana Dilepas) agar nama lain dengan kode yang sama
+ * bisa dipakai sebagai kandidat pencocokan. Hanya dipakai bila pencocokan
+ * nama langsung gagal; tidak mengubah hasil yang sudah cocok.
+ */
+var analysisAliasCache = { at: 0, byName: null, byCode: null };
+
+function buildAnalysisAliasIndex() {
+
+    const now = Date.now();
+
+    if (
+        analysisAliasCache.byName &&
+        now - analysisAliasCache.at < 1000
+    ) {
+        return analysisAliasCache;
+    }
+
+    const byName = new Map();   /* nama ternormalisasi -> Set kode */
+    const byCode = new Map();   /* kode -> Map(nama ternormalisasi -> nama asli) */
+
+    function add(code, name) {
+        const c = String(code == null ? "" : code).trim();
+        const n = String(name == null ? "" : name).trim();
+        const key = normalizeAnalysisProductName(n);
+        if (!c || c === "-" || !key) {
+            return;
+        }
+        if (!byName.has(key)) { byName.set(key, new Set()); }
+        byName.get(key).add(c);
+        if (!byCode.has(c)) { byCode.set(c, new Map()); }
+        byCode.get(c).set(key, n);
+    }
+
+    try {
+
+        const store =
+            typeof window.loadStore === "function"
+                ? (window.loadStore() || {})
+                : {};
+
+        const perf = store.performaProduk || {};
+        Object.keys(perf).forEach(function(k) {
+            (Array.isArray(perf[k]) ? perf[k] : []).forEach(function(up) {
+                const list = up && up.parsed && up.parsed.products;
+                (Array.isArray(list) ? list : []).forEach(function(p) {
+                    add(p && p.code, p && p.name);
+                });
+            });
+        });
+
+        const dana = store["dana-dilepas"] || {};
+        Object.keys(dana).forEach(function(k) {
+            (Array.isArray(dana[k]) ? dana[k] : []).forEach(function(up) {
+                const parsed = up && up.parsed;
+                [parsed && parsed.productSummary, parsed && parsed.products].forEach(function(list) {
+                    (Array.isArray(list) ? list : []).forEach(function(p) {
+                        add(p && p.productId, p && p.productName);
+                    });
+                });
+            });
+        });
+
+    } catch (e) {
+        /* indeks gagal dibuat: pencocokan nama biasa tetap berjalan */
+    }
+
+    analysisAliasCache = { at: now, byName: byName, byCode: byCode };
+
+    return analysisAliasCache;
+
+}
+
+/* nama lain (kode sama) untuk satu nama produk; kosong bila kode tidak jelas */
+function analysisAliasNames(name) {
+
+    const idx = buildAnalysisAliasIndex();
+    const key = normalizeAnalysisProductName(name);
+    const codes = idx.byName && idx.byName.get(key);
+
+    if (!codes || codes.size !== 1) {
+        return [];
+    }
+
+    const code = Array.from(codes)[0];
+    const names = idx.byCode.get(code);
+    const out = [];
+
+    if (names) {
+        names.forEach(function(original, k) {
+            if (k !== key) { out.push(original); }
+        });
+    }
+
+    return out;
+
+}
+
 function findBestAnalysisDatabaseKey(name, database) {
 
     const target =
@@ -16514,33 +16616,55 @@ function findBestAnalysisDatabaseKey(name, database) {
         return null;
     }
 
-    let bestKey = null;
-    let bestDiff = Infinity;
+    function scan(candidate) {
 
-    for (const key of Object.keys(database)) {
+        const candidateNorm =
+            normalizeAnalysisProductName(candidate);
 
-        const entry = database[key];
+        let bestKey = null;
+        let bestDiff = Infinity;
 
-        const dbName =
-            String(
-                (entry && entry.name) || key
+        for (const key of Object.keys(database)) {
+
+            const entry = database[key];
+
+            const dbName =
+                String(
+                    (entry && entry.name) || key
+                );
+
+            if (!analysisProductNamesMatch(candidate, dbName)) {
+                continue;
+            }
+
+            const diff = Math.abs(
+                normalizeAnalysisProductName(dbName).length -
+                candidateNorm.length
             );
 
-        if (!analysisProductNamesMatch(name, dbName)) {
-            continue;
+            if (diff < bestDiff) {
+                bestKey = key;
+                bestDiff = diff;
+                if (diff === 0) {
+                    break;
+                }
+            }
+
         }
 
-        const diff = Math.abs(
-            normalizeAnalysisProductName(dbName).length -
-            target.length
-        );
+        return bestKey;
 
-        if (diff < bestDiff) {
-            bestKey = key;
-            bestDiff = diff;
-            if (diff === 0) {
-                break;
-            }
+    }
+
+    let bestKey = scan(name);
+
+    /* Tidak ada yang cocok lewat nama: coba nama lain dengan KODE PRODUK yang sama. */
+    if (bestKey === null) {
+
+        const aliases = analysisAliasNames(name);
+
+        for (let i = 0; i < aliases.length && bestKey === null; i++) {
+            bestKey = scan(aliases[i]);
         }
 
     }
@@ -25257,12 +25381,37 @@ function expSyncSnapshots(experiments, logs) {
         const slots = [res.plan.before2, res.plan.before1, res.plan.transition].concat(res.plan.afters);
         slots.forEach(function(slot) {
             if (!slot.available) { return; }
+            /* Laporan periode tanpa satu pun produk bukan bukti "produk tidak ada di laporan": jangan dibekukan. */
+            if (!slot.period || !Array.isArray(slot.period.products) || !slot.period.products.length) { return; }
             const snap = E.makeSnapshot(slot, exp.productId, now);
             const r = E.addSnapshot(exp.periods || [], snap);
             if (r.action === "DITAMBAH") {
                 exp.periods = r.periods;
                 dirty = true;
             } else if (r.action === "REVISI_DIPERLUKAN") {
+                const old = r.existing;
+                const oldIdx = old ? (exp.periods || []).indexOf(old) : -1;
+                if (
+                    old && oldIdx >= 0 &&
+                    old.rowState === "PRODUK_TIDAK_ADA" && old.totals == null &&
+                    old.datasetHash === E.datasetHash({ products: [] })
+                ) {
+                    /* Snapshot lama dibuat dari laporan yang masih kosong (tanpa produk): ganti otomatis, tercatat di revisions. */
+                    const next = JSON.parse(JSON.stringify(snap));
+                    exp.revisions = exp.revisions || [];
+                    exp.revisions.push({
+                        role: slot.role,
+                        reason: "Otomatis: snapshot lama dibuat dari laporan periode yang masih kosong (tanpa produk).",
+                        at: now, by: "Sistem", previous: old, next: next
+                    });
+                    exp.periods[oldIdx] = next;
+                    exp.revisionPending = (exp.revisionPending || []).filter(function(x) {
+                        const q = x && x.snapshot;
+                        return !(q && q.productId === next.productId && q.start === next.start && q.end === next.end && q.source === next.source);
+                    });
+                    dirty = true;
+                    return;
+                }
                 exp.revisionPending = exp.revisionPending || [];
                 if (!exp.revisionPending.some(function(x) { return x.key === snap.key; })) {
                     exp.revisionPending.push({ role: slot.role, key: snap.key, detectedAt: now, snapshot: JSON.parse(JSON.stringify(snap)) });
